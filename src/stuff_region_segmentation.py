@@ -26,7 +26,7 @@ def horizontal_projection(image):
     Parámetros:
         image (array): Una matriz que representa la imagen de entrada en escala de grises.
 
-    Retorna:
+    Salidas:
         array: Un array que contiene el histograma de proyección horizontal.
     '''
 
@@ -43,16 +43,6 @@ def horizontal_projection(image):
     return horizontal_image
 
 
-def test_horizontal_projection():
-    image_path = 'images/Test Sheet 2.png'
-    image = cv2.imread(image_path, 0)
-    binary_image = binary_transform(image)
-    horizontal_sum = horizontal_projection(binary_image)
-    cv2.imshow('Horizontal Projection', horizontal_sum)
-    cv2.waitKey(0)
-    cv2.destroyAllWindows()
-
-
 def region_segmentation(image):
     pass
 
@@ -65,6 +55,17 @@ def test_binary_transform():
     cv2.waitKey(0)
     cv2.destroyAllWindows()
 
+
+def test_horizontal_projection():
+    image_path = 'images/Test Sheet 2.png'
+    image = cv2.imread(image_path, 0)
+    binary_image = binary_transform(image)
+    horizontal_sum = horizontal_projection(binary_image)
+    cv2.imshow('Horizontal Projection', horizontal_sum)
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()
+
+
 if __name__ == '__main__':
     test_binary_transform()
-    
+    test_horizontal_projection()
