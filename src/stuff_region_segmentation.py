@@ -15,8 +15,7 @@ def binary_transform(image):
     Salidas:
         binary_image (array): La imagen transformada binariamente.
     '''
-    _, binary_image = cv2.threshold(
-        image, BINARY_TRANFORM_THRESHOLD, 255, cv2.THRESH_BINARY)
+    _, binary_image = cv2.threshold(image, BINARY_TRANFORM_THRESHOLD, 255, cv2.THRESH_BINARY)
     return binary_image
 
 
@@ -30,6 +29,7 @@ def horizontal_projection(image):
     Retorna:
         array: Un array que contiene el histograma de proyección horizontal.
     '''
+
     horizontal_sum = np.sum(image, axis=1)
     max_value = np.max(horizontal_sum)
     if max_value == 0:
@@ -65,6 +65,6 @@ def test_binary_transform():
     cv2.waitKey(0)
     cv2.destroyAllWindows()
 
-
 if __name__ == '__main__':
     test_binary_transform()
+    
