@@ -35,7 +35,7 @@ def connected_component_labeling(image):
 
 
 def test_remove_staff_lines(resize=False):
-    image_path = 'images/Test Sheet 1.png'
+    image_path = 'images/Test Sheet 5.png'
     image = cv2.imread(image_path, 0)
     
     # Obtener la imagen binaria y las líneas de la partitura

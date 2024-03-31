@@ -71,11 +71,65 @@ def region_segmentation(image):
     return staff_lines
 
 
+def get_black_column_positions(image):
+    '''
+    Obtiene las posiciones de las columnas negras en la imagen.
+
+    Parámetros:
+        image (array): Una matriz que representa la imagen.
+
+    Salidas:
+        black_column_positions (list): Una lista que contiene las posiciones de las columnas negras.
+    '''
+    black_column_positions = []
+
+    for y in range(image.shape[0]):
+        is_black_column = image[y, 1] == 0
+        if is_black_column:
+            black_column_positions.append(y)
+
+    return black_column_positions
+
+
+def get_staff_lines_positions(black_column_positions):
+    '''
+    Obtiene las posiciones medias de cada línea de pentagrama en la imagen.
+
+    Parámetros:
+        black_column_positions (list): Una lista que contiene las posiciones de las columnas negras.
+
+    Salidas:
+        staff_lines_positions (list): Una lista de listas que contiene las posiciones medias de cada línea de pentagrama.
+    '''
+    staffs = []
+    current_staff = []
+    current_staff_line = 0
+
+    started_position = black_column_positions[0]
+
+    for i in range(1, len(black_column_positions)):
+        if (black_column_positions[i] - black_column_positions[i - 1]) > 1 or i == len(black_column_positions) - 1:
+            
+            current_staff.append(round((started_position + black_column_positions[i - 1]) / 2))
+            current_staff_line += 1
+
+            if current_staff_line == 5:
+                staffs.append(current_staff)
+                current_staff = []
+                current_staff_line = 0
+
+            started_position = black_column_positions[i]
+
+    return staffs
+
+
+
+
 ##############################################   PRUEBAS   ##############################################
 
 
 def test_binary_transform(resize = False):
-    image_path = 'images/Test Sheet X-1.png'
+    image_path = 'images/Test Sheet 9.png'
     image = cv2.imread(image_path, 0)
     binary_image = binary_transform(image)
     if resize:
@@ -86,7 +140,7 @@ def test_binary_transform(resize = False):
 
 
 def test_horizontal_projection(resize = False):
-    image_path = 'images/Test Sheet 8.png'
+    image_path = 'images/Test Sheet 9.png'
     image = cv2.imread(image_path, 0)
     binary_image = binary_transform(image)
     horizontal_sum = horizontal_projection(binary_image)
@@ -111,7 +165,21 @@ def test_region_segmentation(resize=False):
 
 
 
+
+
 if __name__ == '__main__':
     test_binary_transform(True)
     test_horizontal_projection(True)
     test_region_segmentation(True)
+
+    '''
+    image_path = 'images/Test Sheet 8.png'
+    image = cv2.imread(image_path, 0)
+    binary_image = binary_transform(image)
+    horizontal_sum = horizontal_projection(binary_image)
+    staff_lines = region_segmentation(horizontal_sum)
+    staff_lines_positions = get_black_column_positions(staff_lines)
+    result = get_staff_lines_positions(staff_lines_positions)
+    print(staff_lines_positions)
+    print(result)
+    '''
