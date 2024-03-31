@@ -173,7 +173,7 @@ if __name__ == '__main__':
     test_region_segmentation(True)
 
     '''
-    image_path = 'images/Test Sheet 8.png'
+    image_path = 'images/Test Sheet 10.png'
     image = cv2.imread(image_path, 0)
     binary_image = binary_transform(image)
     horizontal_sum = horizontal_projection(binary_image)
