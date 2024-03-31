@@ -3,7 +3,7 @@ import numpy as np
 
 
 BINARY_TRANFORM_THRESHOLD = 127
-REGION_SEGMENTATION_RATIO = 0.5
+REGION_SEGMENTATION_RATIO = 0.7
 
 
 ##############################################   FUNCIONES   ##############################################
@@ -75,7 +75,7 @@ def region_segmentation(image):
 
 
 def test_binary_transform(resize = False):
-    image_path = 'images/Test Sheet 8.png'
+    image_path = 'images/Test Sheet X-1.png'
     image = cv2.imread(image_path, 0)
     binary_image = binary_transform(image)
     if resize:
@@ -98,7 +98,7 @@ def test_horizontal_projection(resize = False):
 
 
 def test_region_segmentation(resize=False):
-    image_path = 'images/Test Sheet 8.png'
+    image_path = 'images/Test Sheet 9.png'
     image = cv2.imread(image_path, 0)
     binary_image = binary_transform(image)
     horizontal_sum = horizontal_projection(binary_image)
