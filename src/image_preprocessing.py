@@ -1,5 +1,4 @@
 import numpy as np
-import stuff_region_segmentation
 
 import cv2
 
@@ -26,37 +25,19 @@ def staff_line_filtering(binary_image, staff_lines):
     return image_without_lines
 
 
-def morphological_processing(image):
+def morphological_processing(binary_image, kernel_size):
+    '''
+    Aplica el procesamiento morfológico para mejorar la conectividad y estructura de la imagen binaria.
+
+    Parámetros:
+        binary_image (array): Una matriz que representa la imagen binaria.
+        kernel_size (tuple): Tamaño del elemento estructurante para el cierre morfológico.
+
+    Salidas:
+        processed_image (array): La imagen binaria procesada morfológicamente.
+    '''
     pass
 
 
 def connected_component_labeling(image):
     pass
-
-
-def test_remove_staff_lines(resize=False):
-    image_path = 'images/Test Sheet 5.png'
-    image = cv2.imread(image_path, 0)
-    
-    # Obtener la imagen binaria y las líneas de la partitura
-    binary_image = stuff_region_segmentation.binary_transform(image)
-    horizontal_sum = stuff_region_segmentation.horizontal_projection(binary_image)
-    staff_lines = stuff_region_segmentation.region_segmentation(horizontal_sum)
-    
-    # Eliminar las líneas de la partitura de la imagen binaria
-    image_without_lines = staff_line_filtering(binary_image, staff_lines)
-    
-    if resize:
-        # Redimensionar imágenes para una mejor visualización
-        binary_image = cv2.resize(binary_image, (0, 0), fx=0.5, fy=0.5)
-        staff_lines = cv2.resize(staff_lines, (0, 0), fx=0.5, fy=0.5)
-        image_without_lines = cv2.resize(image_without_lines, (0, 0), fx=0.5, fy=0.5)
-    
-    # Visualizar las imágenes
-    cv2.imshow('Image Without Staff Lines', image_without_lines)
-    cv2.waitKey(0)
-    cv2.destroyAllWindows()
-
-
-if __name__ == '__main__':
-    test_remove_staff_lines(True)
