@@ -99,7 +99,7 @@ def get_staff_lines_positions(black_column_positions):
         black_column_positions (list): Una lista que contiene las posiciones de las columnas negras.
 
     Salidas:
-        staff_lines_positions (list): Una lista de listas que contiene las posiciones medias de cada línea de pentagrama.
+        staffs (list[list]): Una lista de listas que contiene las posiciones medias de cada línea de pentagrama.
     '''
     staffs = []
     current_staff = []
@@ -121,3 +121,17 @@ def get_staff_lines_positions(black_column_positions):
             started_position = black_column_positions[i]
 
     return staffs
+
+
+def get_staff_lines_positions_v2(black_column_positions):
+    '''
+    Una alternativa de la función alterior donde solo se retorna la lista de primeras lineas del pentagrama y la media de 
+    distancia entre las lineas
+
+    Parámetros:
+        black_column_positions (list): Una lista que contiene las posiciones de las columnas negras.
+
+    Salidas:
+        staffs (list, int): Una lista de listas que contiene las posiciones medias de cada línea de pentagrama.
+    '''
+    pass
