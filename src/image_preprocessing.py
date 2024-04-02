@@ -14,7 +14,7 @@ def staff_line_filtering(binary_image, staff_lines):
     Salidas:
         image_without_lines (array): La imagen binaria sin las líneas de la partitura.
     '''
-    
+
     inverted_staff_lines = cv2.bitwise_not(staff_lines)                         # Invertir las líneas del pentagrama (cambiar 0 por 255 y viceversa)
     image_without_lines = cv2.bitwise_and(binary_image, inverted_staff_lines)   # Aplicar una operación de AND para eliminar las áreas donde ambas imágenes tienen píxeles negros
     inverted_staff_lines = cv2.bitwise_not(inverted_staff_lines)                # Invertir nuevamente las líneas del pentagrama para obtener las áreas que son solo negras en esa imagen

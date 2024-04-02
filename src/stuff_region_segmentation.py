@@ -20,7 +20,7 @@ def binary_transform(image):
         binary_image (array): La imagen transformada binariamente.
     '''
     _, binary_image = cv2.threshold(image, BINARY_TRANFORM_THRESHOLD, 255, cv2.THRESH_BINARY)
-    return binary_image
+    return binary_image[:,:,1]
 
 
 def horizontal_projection(image):
@@ -43,8 +43,12 @@ def horizontal_projection(image):
     horizontal_sum_normalized = (horizontal_sum / max_value) * (width - 1)              # Normaliza la suma horizontal
     horizontal_image = np.zeros((height, width), dtype=np.uint8)                        # Crea una matriz de ceros con las mismas dimensiones que la imagen original
     
-    for y, value in enumerate(horizontal_sum_normalized):                               # Itera sobre la suma horizontal para dibujar las líneas de la proyección horizontal
-        cv2.line(horizontal_image, (width - int(value) - 1, y), (width, y), 255, 1)     # El -1 es para que no se dibuje una línea en la primera columna de la imagen
+    for y, value in enumerate(horizontal_sum_normalized):                              # Itera sobre la suma horizontal para dibujar las líneas de la proyección horizontal
+        if np.isscalar(value):
+            value = int(value)
+        else:
+            value = int(value[0])
+        cv2.line(horizontal_image, (width - value - 1, y), (width, y), 255, 1)     # El -1 es para que no se dibuje una línea en la primera columna de la imagen
 
     return horizontal_image
 
