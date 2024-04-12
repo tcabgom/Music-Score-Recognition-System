@@ -13,7 +13,7 @@ def test_project(image_path):
 
     binary_image = stuff_region_segmentation.binary_transform(image)
     cv2.imwrite('testing/00_binary_transform_result.png', binary_image)
-    print('\nBinary image succesfully created and saved')
+    print('\n[STEP 01/XX] Binary image succesfully created and saved')
 
     horizontal_sum = stuff_region_segmentation.horizontal_projection(binary_image)
     hist_image = stuff_region_segmentation.get_histogram_image(binary_image, horizontal_sum)
@@ -22,13 +22,13 @@ def test_project(image_path):
 
     staff_lines = stuff_region_segmentation.region_segmentation(binary_image, horizontal_sum)
     cv2.imwrite('testing/02_region_segmentation_result.png', staff_lines)
-    print('\nRegion segmentation succesfully created and saved')
+    print('\n[STEP 03/XX] Region segmentation succesfully created and saved')
 
     columns_with_lines = stuff_region_segmentation.get_black_column_positions(staff_lines)
-    print('\nColumns with lines detected:', columns_with_lines)
+    print('\n[STEP 04/XX] Columns with lines detected:', columns_with_lines)
 
     staff_lines_positions = stuff_region_segmentation.get_staff_lines_positions(columns_with_lines)
-    print('\nStaff lines positions:', staff_lines_positions)
+    print('\n[STEP 05/XX] Staff lines positions:', staff_lines_positions)
 
     all_staff_lines = []
     for staff in staff_lines_positions:
@@ -47,11 +47,18 @@ def test_project(image_path):
 
     image_without_lines = image_preprocessing.staff_line_filtering(binary_image, staff_lines)
     cv2.imwrite('testing/04_image_without_lines_result.png', image_without_lines)
-    print('\nImage without lines succesfully created and saved')
+    print('\n[STEP 06/XX] Image without lines succesfully created and saved')
 
     processed_image = image_preprocessing.morphological_processing(image_without_lines, (3, 3))
-    #cv2.imwrite('testing/04_processed_image.png', processed_image)
-    #print('\nProcessed image succesfully created and saved')
+    cv2.imwrite('testing/05_processed_image.png', processed_image)
+    print('\n[STEP 07/XX] Processed image succesfully created and saved')
+
+    print('\nLabeling connected components. This process might take a while...')
+    labeled_image, num_labels = image_preprocessing.connected_component_labeling(processed_image)
+    _, labeled_image = cv2.threshold(labeled_image, 1, 255, cv2.THRESH_BINARY)
+    cv2.imwrite('testing/06_labeled_image.png', labeled_image)
+    print('\n[STEP 08/XX] Labeled image succesfully created and saved. Detected', num_labels, 'components')
+
 
 if __name__ == '__main__':
-    test_project('images/Test Sheet 10.png')
+    test_project('images/Test Sheet 1.png')
