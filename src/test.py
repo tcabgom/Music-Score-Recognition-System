@@ -30,6 +30,9 @@ def test_project(image_path):
     staff_lines_positions = stuff_region_segmentation.get_staff_lines_positions(columns_with_lines)
     print('\n[STEP 05/XX] Staff lines positions:', staff_lines_positions)
 
+    staff_lines_positions_v2 = stuff_region_segmentation.get_staff_lines_positions_v2(columns_with_lines)
+    print('\n[STEP 05/XX] Staff lines positions:', staff_lines_positions_v2)
+
     all_staff_lines = []
     for staff in staff_lines_positions:
         for line in staff:
@@ -62,4 +65,4 @@ def test_project(image_path):
 
 
 if __name__ == '__main__':
-    test_project('images/Test Sheet 8.png')
+    test_project('images/Test Sheet 10.png')

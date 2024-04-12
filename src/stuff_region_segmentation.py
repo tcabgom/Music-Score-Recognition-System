@@ -83,12 +83,12 @@ def region_segmentation(image, hist):
         staff_lines: Un array que contiene las líneas de las partituras sin notas ni otros símbolos.
     '''
     staff_lines = np.zeros_like(image)
-    threshold = int(np.max(hist)*REGION_SEGMENTATION_RATIO)
+    threshold = int(image.shape[1]*(1-REGION_SEGMENTATION_RATIO))
 
-    for y in range(image.shape[0]):                                     # Itera sobre las filas de la imagen
-        if hist[y] >= threshold:                                  # Si el píxel en la posición (threshold, y) es blanco, no dibujar linea
+    for y in range(image.shape[0]):                               # Itera sobre las filas de la imagen
+        if hist[y] >= threshold:                                 # Si el píxel en la posición (threshold, y) es blanco, no dibujar linea
             staff_lines[y, :] = 255
-        else:                                                           # Si el píxel en la posición (threshold, y) es negro, dibujar linea
+        else:                                                     # Si el píxel en la posición (threshold, y) es negro, dibujar linea
             staff_lines[y, :] = 0
 
     return staff_lines
@@ -155,6 +155,26 @@ def get_staff_lines_positions_v2(black_column_positions):
         black_column_positions (list): Una lista que contiene las posiciones de las columnas negras.
 
     Salidas:
-        staffs (list, int): Una lista de listas que contiene las posiciones medias de cada línea de pentagrama.
+        staffs list[(int, int)]: Una lista de listas que contiene las posiciones medias de cada línea de pentagrama.
     '''
-    pass
+    staffs = []
+    current_staff_start = black_column_positions[0]
+    current_staff_end = None
+    num_lines = 0
+    total_distance = 0
+
+    for i in range(1, len(black_column_positions)):
+        distance = black_column_positions[i] - black_column_positions[i - 1]
+        if distance > 1 or i == len(black_column_positions) - 1:
+            current_staff_end = black_column_positions[i - 1]
+            total_distance += current_staff_end - current_staff_start
+            num_lines += 1
+
+            if num_lines == 4:  # Contamos desde 0, así que 4 líneas significan un pentagrama completo.
+                staffs.append((current_staff_start, round(total_distance / 3)))
+                current_staff_start = black_column_positions[i]
+                current_staff_end = None
+                num_lines = 0
+                total_distance = 0
+
+    return staffs
