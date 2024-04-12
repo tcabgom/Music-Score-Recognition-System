@@ -52,7 +52,7 @@ def test_project(image_path):
     cv2.imwrite('testing/04_image_without_lines_result.png', image_without_lines)
     print('\n[STEP 06/XX] Image without lines succesfully created and saved')
 
-    processed_image = image_preprocessing.morphological_processing(image_without_lines, (3, 3))
+    processed_image = image_preprocessing.morphological_processing(image_without_lines, (5,5))
     cv2.imwrite('testing/05_processed_image.png', processed_image)
     print('\n[STEP 07/XX] Processed image succesfully created and saved')
 

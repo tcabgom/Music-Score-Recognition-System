@@ -162,6 +162,7 @@ def get_staff_lines_positions_v2(black_column_positions):
     current_staff_end = None
     num_lines = 0
     total_distance = 0
+    first_line_thickness = 0
 
     for i in range(1, len(black_column_positions)):
         distance = black_column_positions[i] - black_column_positions[i - 1]
@@ -169,12 +170,13 @@ def get_staff_lines_positions_v2(black_column_positions):
             current_staff_end = black_column_positions[i - 1]
             total_distance += current_staff_end - current_staff_start
             num_lines += 1
+            print(num_lines, black_column_positions[i], total_distance, current_staff_start, current_staff_end)
 
-            if num_lines == 4:  # Contamos desde 0, así que 4 líneas significan un pentagrama completo.
-                staffs.append((current_staff_start, round(total_distance / 3)))
+            if num_lines == 5:  # Contamos desde 0, así que 5 líneas significan un pentagrama completo.
+                staffs.append((current_staff_start, round(total_distance / 4)))
                 current_staff_start = black_column_positions[i]
                 current_staff_end = None
                 num_lines = 0
                 total_distance = 0
-
+        
     return staffs
