@@ -20,7 +20,11 @@ def binary_transform(image):
         binary_image (array): La imagen transformada binariamente.
     '''
     _, binary_image = cv2.threshold(image, BINARY_TRANFORM_THRESHOLD, 255, cv2.THRESH_BINARY)
-    return binary_image
+    
+    if len(binary_image.shape) > 2:
+        return binary_image[:,:,0]
+    else:
+        return binary_image
 
 
 def horizontal_projection(image):
@@ -31,43 +35,58 @@ def horizontal_projection(image):
         image (array): Una matriz que representa la imagen de entrada en escala de grises.
 
     Salidas:
-        array: Un array que contiene el histograma de proyección horizontal.
+        horizontal_sum (array): Un vector que contiene el histograma de proyección horizontal.
+    '''
+    normalized_image = image/255
+    horizontal_sum = np.sum(normalized_image, axis=1)                                              # Calcula la suma horizontal de los píxeles en la imagen
+
+    return horizontal_sum
+
+def get_histogram_image(image, hist):
+    '''
+    Calcula la imagen del histograma de proyección horizontal de una imagen dada.
+
+    Parámetros:
+        image (array): Una matriz que representa la imagen de entrada en escala de grises.
+        hist (array): Un vector que representa el histograma de proyección horizontal.
+
+    Salidas:
+        horizontal_image (array): Una matriz que contiene la imagen del histograma de proyección horizontal.
     '''
     height, width = image.shape[:2]                                                     # Obtiene las dimensiones de la imagen
-    horizontal_sum = np.sum(image, axis=1)                                              # Calcula la suma horizontal de los píxeles en la imagen
-    max_value = np.max(horizontal_sum)                                                  # Encuentra el valor máximo de la suma horizontal
+    max_value = np.max(hist)                                                            # Encuentra el valor máximo de la suma horizontal
     
     if max_value == 0:                                                                  # Si la suma máxima es cero, devuelve una matriz de ceros con las mismas dimensiones que la imagen original
         return np.zeros((height, width), dtype=np.uint8)
 
-    horizontal_sum_normalized = (horizontal_sum / max_value) * (width - 1)              # Normaliza la suma horizontal
+    horizontal_sum_normalized = (hist / max_value) * (width - 1)                        # Normaliza la suma horizontal
     horizontal_image = np.zeros((height, width), dtype=np.uint8)                        # Crea una matriz de ceros con las mismas dimensiones que la imagen original
     
-    for y, value in enumerate(horizontal_sum_normalized):                              # Itera sobre la suma horizontal para dibujar las líneas de la proyección horizontal
+    for y, value in enumerate(horizontal_sum_normalized):                               # Itera sobre la suma horizontal para dibujar las líneas de la proyección horizontal
         if np.isscalar(value):
             value = int(value)
         else:
             value = int(value[0])
-        cv2.line(horizontal_image, (width - value - 1, y), (width, y), 255, 1)     # El -1 es para que no se dibuje una línea en la primera columna de la imagen
+        cv2.line(horizontal_image, (width - value - 1, y), (width, y), 255, 1)          # El -1 es para que no se dibuje una línea en la primera columna de la imagen
 
     return horizontal_image
 
-
-def region_segmentation(image):
+def region_segmentation(image, hist):
     '''
     Realiza la segmentación de regiones para detectar las líneas de las partituras en una imagen binaria.
 
     Parámetros:
         image (array): Una histograma de proyección horizontal.
+        hist (array): Un vector que representa el histograma de proyección horizontal.
 
     Salidas:
         staff_lines: Un array que contiene las líneas de las partituras sin notas ni otros símbolos.
     '''
-    threshold = round(image.shape[1] * REGION_SEGMENTATION_RATIO)       # Calcula el pixel umbral para la segmentación de regiones
-    staff_lines = np.zeros_like(image)                                  # Crea una matriz de ceros con las mismas dimensiones que la imagen original
-    
+    staff_lines = np.zeros_like(image)
+    threshold = int(np.max(hist)*REGION_SEGMENTATION_RATIO)
+
     for y in range(image.shape[0]):                                     # Itera sobre las filas de la imagen
-        if image[y, threshold] == 255:                                  # Si el píxel en la posición (threshold, y) es blanco, no dibujar linea
+        if hist[y] >= threshold:                                  # Si el píxel en la posición (threshold, y) es blanco, no dibujar linea
             staff_lines[y, :] = 255
         else:                                                           # Si el píxel en la posición (threshold, y) es negro, dibujar linea
             staff_lines[y, :] = 0
