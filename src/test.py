@@ -52,12 +52,13 @@ def test_project(image_path):
     cv2.imwrite('testing/05_processed_image.png', processed_image)
     print('\n[STEP 07/XX] Processed image succesfully created and saved')
 
-    print('\nLabeling connected components. This process might take a while...')
-    labeled_image, num_labels = image_preprocessing.connected_component_labeling(processed_image)
-    _, labeled_image = cv2.threshold(labeled_image, 1, 255, cv2.THRESH_BINARY)
+    #print('\nLabeling connected components. This process might take a while...')
+    num_labels, labeled_image = image_preprocessing.connected_component_labeling(processed_image)
+    print(num_labels)
+    print(labeled_image)
     cv2.imwrite('testing/06_labeled_image.png', labeled_image)
     print('\n[STEP 08/XX] Labeled image succesfully created and saved. Detected', num_labels, 'components')
 
 
 if __name__ == '__main__':
-    test_project('images/Test Sheet 1.png')
+    test_project('images/Test Sheet 8.png')

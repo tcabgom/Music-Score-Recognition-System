@@ -50,45 +50,8 @@ def connected_component_labeling(binary_image):
         binary_image (array): Una matriz que representa la imagen binaria.
 
     Salidas:
-        labeled_image (array): La imagen con componentes conectados etiquetados.
         num_labels (int): El número total de etiquetas utilizadas.
+        labeled_image (array): La imagen con componentes conectados etiquetados.
     '''
-
-    labeled_image = np.zeros_like(binary_image)
-    label = 1  # Inicializar la etiqueta con 1
-    stack = []
-
-    # Recorrer la imagen binaria
-    for y in range(binary_image.shape[0]):
-        for x in range(binary_image.shape[1]):
-            if binary_image[y, x] == 0 or labeled_image[y, x] != 0:
-                continue
-
-            # Inicializar la pila con la semilla actual
-            stack.append((x, y))
-
-            # Mientras haya elementos en la pila
-            while stack:
-                current_x, current_y = stack.pop()
-
-                # Verificar si el píxel actual es válido y si ya ha sido etiquetado
-                if current_x < 0 or current_y < 0 or current_x >= binary_image.shape[1] or current_y >= binary_image.shape[0]:
-                    continue
-                if labeled_image[current_y, current_x] != 0 or binary_image[current_y, current_x] == 0:
-                    continue
-
-                # Asignar la etiqueta al píxel actual
-                labeled_image[current_y, current_x] = label
-
-                # Agregar los píxeles adyacentes válidos y no etiquetados a la pila
-                for dx, dy in [(1, 0), (-1, 0), (0, 1), (0, -1)]:
-                    new_x, new_y = current_x + dx, current_y + dy
-                    if 0 <= new_x < binary_image.shape[1] and 0 <= new_y < binary_image.shape[0] and labeled_image[new_y, new_x] == 0:
-                        stack.append((new_x, new_y))
-
-            label += 1
-    
-    # Contar el número total de etiquetas utilizadas
-    num_labels = label - 1
-
-    return labeled_image, num_labels
+    inverted_image = cv2.bitwise_not(binary_image)
+    return cv2.connectedComponents(inverted_image)
