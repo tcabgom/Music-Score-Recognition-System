@@ -36,6 +36,7 @@ def morphological_processing(binary_image, kernel_size):
     Salidas:
         processed_image (array): La imagen binaria procesada morfológicamente.
     '''
+    
     kernel = np.ones(kernel_size, np.uint8)                             # Crear un kernel para el cierre morfológico
     dilated_image = cv2.erode(binary_image, kernel, iterations=1)       # Erosionar la imagen
     processed_image = cv2.dilate(dilated_image, kernel, iterations=1) # Dilatar la imagen binaria para cerrar

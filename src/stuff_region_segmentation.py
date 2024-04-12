@@ -114,36 +114,69 @@ def get_black_column_positions(image):
     return black_column_positions
 
 
-def get_staff_lines_positions(black_column_positions):
-    '''
-    Obtiene las posiciones medias de cada línea de pentagrama en la imagen.
+def get_staff_lines_positions_and_thickness(black_column_positions):
+    """
+    Obtiene las posiciones medias de cada línea de pentagrama en la imagen
+    y calcula el tamaño de la línea más gruesa.
 
     Parámetros:
         black_column_positions (list): Una lista que contiene las posiciones de las columnas negras.
 
     Salidas:
         staffs (list[list]): Una lista de listas que contiene las posiciones medias de cada línea de pentagrama.
-    '''
+        max_thickness (int): El tamaño máximo de la línea más gruesa.
+    """
     staffs = []
     current_staff = []
-    current_staff_line = 0
+    max_thickness = 0
 
+    # Función para agregar la línea actual y reiniciar el contador
+    def add_staff_line(start, end, thickness):
+        nonlocal max_thickness
+        nonlocal current_staff
+
+        # Calcular la posición media de la línea
+        position = round((start + end) / 2)
+
+        # Agregar la posición al pentagrama actual
+        current_staff.append(position)
+
+        # Actualizar el grosor máximo
+        max_thickness = max(max_thickness, thickness)
+
+    # Iterar sobre las posiciones de las columnas negras
     started_position = black_column_positions[0]
+    consecutive_pixels = 1
 
     for i in range(1, len(black_column_positions)):
-        if (black_column_positions[i] - black_column_positions[i - 1]) > 1 or i == len(black_column_positions) - 1:
-            
-            current_staff.append(round((started_position + black_column_positions[i - 1]) / 2))
-            current_staff_line += 1
+        # Comprobar si los píxeles son consecutivos
+        if black_column_positions[i] - black_column_positions[i - 1] == 1:
+            consecutive_pixels += 1
+        else:
+            # Registrar el grosor y la posición de la línea actual
+            thickness = consecutive_pixels
+            add_staff_line(started_position, black_column_positions[i - 1], thickness)
 
-            if current_staff_line == 5:
-                staffs.append(current_staff)
-                current_staff = []
-                current_staff_line = 0
+            # Reiniciar el contador de píxeles consecutivos
+            consecutive_pixels = 1
 
+            # Empezar un nuevo grupo de píxeles consecutivos
             started_position = black_column_positions[i]
 
-    return staffs
+            # Si hemos alcanzado el número esperado de líneas en el pentagrama,
+            # agregar el pentagrama actual a la lista de pentagramas y reiniciar la lista
+            if len(current_staff) == 5:
+                staffs.append(current_staff)
+                current_staff = []
+
+    # Procesar el último grupo
+    thickness = consecutive_pixels
+    add_staff_line(started_position, black_column_positions[-1], thickness)
+
+    # Agregar el último pentagrama a la lista de pentagramas
+    staffs.append(current_staff)
+
+    return staffs, max_thickness
 
 
 def get_staff_lines_positions_v2(black_column_positions):
