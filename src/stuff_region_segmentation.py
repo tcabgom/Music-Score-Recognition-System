@@ -20,7 +20,7 @@ def binary_transform(image):
         binary_image (array): La imagen transformada binariamente.
     '''
     _, binary_image = cv2.threshold(image, BINARY_TRANFORM_THRESHOLD, 255, cv2.THRESH_BINARY)
-    return binary_image[:,:,1]
+    return binary_image
 
 
 def horizontal_projection(image):
