@@ -16,10 +16,11 @@ def test_project(image_path):
     print('\nBinary image succesfully created and saved')
 
     horizontal_sum = stuff_region_segmentation.horizontal_projection(binary_image)
-    cv2.imwrite('testing/01_horizontal_projection_result.png', horizontal_sum)
+    hist_image = stuff_region_segmentation.get_histogram_image(binary_image, horizontal_sum)
+    cv2.imwrite('testing/01_horizontal_projection_result.png', hist_image)
     print('\nHorizontal sum succesfully created and saved')
 
-    staff_lines = stuff_region_segmentation.region_segmentation(horizontal_sum)
+    staff_lines = stuff_region_segmentation.region_segmentation(binary_image, horizontal_sum)
     cv2.imwrite('testing/02_region_segmentation_result.png', staff_lines)
     print('\nRegion segmentation succesfully created and saved')
 
