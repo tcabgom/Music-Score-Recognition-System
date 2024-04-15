@@ -76,7 +76,7 @@ def region_segmentation(image, hist):
     Realiza la segmentación de regiones para detectar las líneas de las partituras en una imagen binaria.
 
     Parámetros:
-        image (array): Una histograma de proyección horizontal.
+        image (array): Una imagen de una partitura.
         hist (array): Un vector que representa el histograma de proyección horizontal.
 
     Salidas:
@@ -221,3 +221,4 @@ def get_staff_lines_positions_v2(black_column_positions):
                 total_distance = 0                                                              # Reinicia la distancia total                                 
         
     return staffs
+
