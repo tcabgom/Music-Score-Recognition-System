@@ -191,25 +191,33 @@ def get_staff_lines_positions_v2(black_column_positions):
         staffs list[(int, int)]: Una lista de listas que contiene las posiciones medias de cada línea de pentagrama.
     '''
     staffs = []
+
     current_staff_start = black_column_positions[0]
-    current_staff_end = None
+    current_line_start = current_staff_start
+    current_line_end = None
+
     num_lines = 0
     total_distance = 0
-    first_line_thickness = 0
 
-    for i in range(1, len(black_column_positions)):
-        distance = black_column_positions[i] - black_column_positions[i - 1]
-        if distance > 1 or i == len(black_column_positions) - 1:
-            current_staff_end = black_column_positions[i - 1]
-            total_distance += current_staff_end - current_staff_start
-            num_lines += 1
-            print(num_lines, black_column_positions[i], total_distance, current_staff_start, current_staff_end)
+    current_line_middle_point = None
+    previous_line_middle_point = None
 
-            if num_lines == 5:  # Contamos desde 0, así que 5 líneas significan un pentagrama completo.
-                staffs.append((current_staff_start, round(total_distance / 4)))
-                current_staff_start = black_column_positions[i]
-                current_staff_end = None
-                num_lines = 0
-                total_distance = 0
+    for i in range(1, len(black_column_positions)):                                             # Itera sobre las posiciones de las columnas negras
+        distance = black_column_positions[i] - black_column_positions[i - 1]                    # Calcula la distancia entre las columnas negras
+        if distance > 1 or i == len(black_column_positions) - 1:                                # Si la distancia es mayor a 1 o si es la última columna negra 
+            current_line_end = black_column_positions[i-1]                                      # Establece la columna negra anterior como el final de la línea actual
+            current_line_middle_point = round((current_line_start + current_line_end) / 2)      # Calcula el punto medio de la línea actual
+            current_line_start = black_column_positions[i]                                      # Establece la columna negra actual como el inicio de la siguiente línea
+            num_lines += 1                                                                      # Incrementa el contador de líneas                                
+            if num_lines > 1:                                                                   # Si ya se han detectado más de una línea
+                total_distance += current_line_middle_point - previous_line_middle_point        # Calcula la distancia entre la línea actual y la anterior
+            previous_line_middle_point = current_line_middle_point                              # Establece el punto medio de la línea actual como el punto medio de la línea anterior
+
+            if num_lines == 5:                                                                  # Contamos desde 0, así que 5 líneas significan un pentagrama completo.
+                staffs.append((current_staff_start, round(total_distance / 4)))                 # Agrega la posición media de la primera línea del pentagrama y la distancia media entre las líneas
+                current_staff_start = black_column_positions[i]                                 # Establece la columna negra actual como el inicio del siguiente pentagrama
+                current_line_end = None                                                         # Reinicia el final de la línea actual
+                num_lines = 0                                                                   # Reinicia el contador de líneas
+                total_distance = 0                                                              # Reinicia la distancia total                                 
         
     return staffs

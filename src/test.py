@@ -31,6 +31,9 @@ def test_project(image_path):
     print('\n[STEP 05/XX] Staff lines positions:', staff_lines_positions)
     print('\n[STEP 05/XX] Maximum line thickness:', max_thickness)
 
+    staff_lines_v2 = stuff_region_segmentation.get_staff_lines_positions_v2(columns_with_lines)
+    print('\n[STEP 05/XX] Staff lines positions v2:', staff_lines_v2)
+
     all_staff_lines = []
     for staff in staff_lines_positions:
         for line in staff:
@@ -49,7 +52,7 @@ def test_project(image_path):
     cv2.imwrite('testing/04_image_without_lines_result.png', image_without_lines)
     print('\n[STEP 06/XX] Image without lines successfully created and saved')
 
-    processed_image = image_preprocessing.morphological_processing(image_without_lines, (5,5))
+    processed_image = image_preprocessing.morphological_processing(image_without_lines, ((max_thickness+1),(max_thickness+1)))
     cv2.imwrite('testing/05_processed_image.png', processed_image)
     print('\n[STEP 07/XX] Processed image successfully created and saved')
 
@@ -62,5 +65,5 @@ def test_project(image_path):
 
 
 if __name__ == '__main__':
-    test_project('images/Test Sheet 10.png')
+    test_project('images/Test Sheet 8.png')
 
