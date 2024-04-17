@@ -63,8 +63,11 @@ def test_project(image_path):
 
     ######################################################## NOTE RECOGNITION ########################################################
 
-    staff_images = note_recognition.divide_staff(processed_image, staff_lines_positions)
-    print('\n[STEP 09/XX] Staff images successfully created')
+    sizes = note_recognition.size_filtering(staff_lines_v2)
+    print('\n[STEP 11/XX] Sizes successfully created', "\n", sizes)
+
+    staff_images = note_recognition.divide_staff_v2(processed_image, staff_lines_v2, sizes[2])
+    print('\n[STEP 09_alt/XX] Staff images successfully created')
     for i in range(len(staff_images)):
         cv2.imwrite('testing/07_divide_staff_images/07_image_' + str(i) + '.png', staff_images[i])
 
@@ -73,17 +76,10 @@ def test_project(image_path):
     for i in range(len(stem_lines)):
         cv2.imwrite('testing/08_stem_filtering_images/08_image_' + str(i) + '.png', stem_lines[i])
 
-    sizes = note_recognition.size_filtering(staff_lines_v2)
-    print('\n[STEP 11/XX] Sizes successfully created', "\n", sizes)
-
-    staff_images = note_recognition.divide_staff_v2(processed_image, staff_lines_v2, sizes[2])
-    print('\n[STEP 09_alt/XX] Staff images successfully created')
-    for i in range(len(staff_images)):
-        cv2.imwrite('testing/07_divide_staff_images_v2/07_image_' + str(i) + '.png', staff_images[i])
 
     note_head_centers = note_recognition.shape_filtering(sizes[0], num_labels, labels, stats)
     print('\n[STEP 13/XX] Note head centers successfully created', "\n", note_head_centers)
 
 if __name__ == '__main__':
-    test_project('images/Test Sheet 3.png')
+    test_project('images/Test Sheet 11.png')
 

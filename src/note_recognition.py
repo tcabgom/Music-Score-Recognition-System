@@ -117,7 +117,7 @@ def stem_filtering(staff_images):
     for staff_index in range(len(staff_images)):
         hist = vertical_projection(cv2.bitwise_not(staff_images[staff_index]))
         current_stem_lines = staff_images[staff_index].copy()  # Make a copy to avoid modifying the original image
-        threshold = int(np.max(hist) * 0.75)
+        threshold = int(np.max(hist) * 0.6)
         for x in range(current_stem_lines.shape[1]):
             if hist[x] >= threshold:
                 # Remove stem pixels in the current column
