@@ -78,11 +78,8 @@ def divide_staff(binary_image, staff_lines_positions):
     return staff_images
 
 
-def divide_staff_v2(image_without_lines, staff_lines):
+def divide_staff_v2(image_without_lines, staff_lines, staff_gap):
     staff_images = []
-
-    # Calcular las distancias entre líneas y los espacios entre pentagramas
-    lines_distance, staff_distance, staff_gap = size_filtering(staff_lines)
 
     # Iterar sobre las posiciones de las líneas de los pentagramas
     for start_y, line_distance in staff_lines:
