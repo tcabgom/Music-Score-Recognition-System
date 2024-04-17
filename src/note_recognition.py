@@ -33,7 +33,7 @@ def size_filtering(staff_lines):
     staff_gap = []
 
     if len(staff_lines) == 1:
-        return staff_lines[0][1], 0, staff_lines[0][1]*5
+        return staff_lines[0][1], 0, staff_lines[0][1]*4
     
     for i in range(1, len(staff_lines)):
         distance = staff_lines[i][0] - staff_lines[i - 1][0]
@@ -41,7 +41,7 @@ def size_filtering(staff_lines):
         staff_lines_distance.append(staff_lines[i][1])
     staff_distance = np.mean(staff_distance).round()
     lines_distance = np.mean(staff_lines_distance).round()
-    staff_gap = (staff_distance - lines_distance * 5).round()
+    staff_gap = (staff_distance - lines_distance * 5)//2
     return lines_distance, staff_distance, staff_gap
 
 
@@ -92,6 +92,12 @@ def divide_staff_v2(image_without_lines, staff_lines):
         start_x = 0
         end_x = image_without_lines.shape[1]
         end_y = int(start_y + (line_distance * 5) + staff_gap)  # Convertir a entero
+
+        # Ajustar start_y para incluir el margen superior
+        start_y -= staff_gap
+        
+        # Asegurarse de que start_y no sea negativo
+        start_y = max(0, start_y)
 
         # Recortar la región de interés de la imagen
         staff_image = image_without_lines[int(start_y):end_y, start_x:end_x]  # Convertir a entero

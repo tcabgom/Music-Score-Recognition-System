@@ -85,5 +85,5 @@ def test_project(image_path):
     print('\n[STEP 13/XX] Note head centers successfully created', "\n", note_head_centers)
 
 if __name__ == '__main__':
-    test_project('images/Test Sheet 2.png')
+    test_project('images/Test Sheet 3.png')
 
