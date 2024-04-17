@@ -117,7 +117,7 @@ def stem_filtering(staff_images):
     '''
     stem_lines = []
 
-    kernel = np.ones(2, np.uint8)  
+    kernel = np.ones(3, np.uint8)  
 
     for staff_index in range(len(staff_images)):
         hist = vertical_projection(cv2.bitwise_not(staff_images[staff_index]))
@@ -184,7 +184,7 @@ def shape_filtering(note_head_size, binary_image):
             rate_of_symmetry = 0
 
         # Threshold for considering as a note head
-        if rate_of_symmetry > 0.1:
+        if rate_of_symmetry > 0.5:
             note_head_centers.append(center)
 
     return note_head_centers
