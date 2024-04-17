@@ -4,6 +4,7 @@ import sys
 import numpy as np
 import stuff_region_segmentation
 import image_preprocessing
+import note_recognition
 
 def test_project(image_path):
 
@@ -56,13 +57,23 @@ def test_project(image_path):
     cv2.imwrite('testing/05_processed_image.png', processed_image)
     print('\n[STEP 07/XX] Processed image successfully created and saved')
 
-    #print('\nLabeling connected components. This process might take a while...')
     num_labels, labeled_image = image_preprocessing.connected_component_labeling(processed_image)
     print(num_labels)
     print(labeled_image)
     cv2.imwrite('testing/06_labeled_image.png', labeled_image)
     print('\n[STEP 08/XX] Labeled image successfully created and saved. Detected', num_labels, 'components')
 
+    ######################################################## NOTE RECOGNITION ########################################################
+
+    staff_images = note_recognition.divide_staff(processed_image, staff_lines_positions)
+    print('\n[STEP 09/XX] Staff images successfully created')
+    for i in range(len(staff_images)):
+        cv2.imwrite('testing/07_divide_staff_images/07_image_' + str(i) + '.png', staff_images[i])
+
+    stem_lines = note_recognition.stem_filtering(staff_images)
+    print('\n[STEP 10/XX] Stem lines successfully created')
+    for i in range(len(stem_lines)):
+        cv2.imwrite('testing/08_stem_filtering_images/08_image_' + str(i) + '.png', stem_lines[i])
 
 if __name__ == '__main__':
     test_project('images/Test Sheet 8.png')
