@@ -26,22 +26,22 @@ notes_mapping = {
 
 
 def size_filtering(staff_lines):
-    #[(328, 16), (549, 17), (769, 16), (990, 17), (1211, 16), (1432, 17), (1653, 16)]
+    #Ejemplo de staff_lines: [(328, 16), (549, 17), (769, 16), (990, 17), (1211, 16), (1432, 17), (1653, 16)]
     # Calculamos la distancia media entre las lineas dentro de cada pentagrama, la distancia media entre pentagramas y la frontera entre pentagramas 
     staff_distance = []
     staff_lines_distance = [staff_lines[0][1]]
     staff_gap = []
 
     if len(staff_lines) == 1:
-        return staff_lines[0][1], 0, [0]
+        return staff_lines[0][1], 0, staff_lines[0][1]*5
     
     for i in range(1, len(staff_lines)):
         distance = staff_lines[i][0] - staff_lines[i - 1][0]
         staff_distance.append(distance)
         staff_lines_distance.append(staff_lines[i][1])
-        staff_gap.append(staff_lines[i - 1][0] + (staff_lines[i - 1][1]*5) + distance)
     staff_distance = np.mean(staff_distance).round()
     lines_distance = np.mean(staff_lines_distance).round()
+    staff_gap = (staff_distance - lines_distance * 5).round()
     return lines_distance, staff_distance, staff_gap
 
 
@@ -76,6 +76,28 @@ def divide_staff(binary_image, staff_lines_positions):
         margin_previous = int(abs(current_stove[0] - previous_stove[4]) / 2 ) if stove_index != 0 else current_stove[0]
         current_stove_image = binary_image[current_stove[0] - margin_previous : current_stove[4] + margin_next,:]
         staff_images.append(current_stove_image)
+
+    return staff_images
+
+
+def divide_staff_v2(image_without_lines, staff_lines):
+    staff_images = []
+
+    # Calcular las distancias entre líneas y los espacios entre pentagramas
+    lines_distance, staff_distance, staff_gap = size_filtering(staff_lines)
+
+    # Iterar sobre las posiciones de las líneas de los pentagramas
+    for start_y, line_distance in staff_lines:
+        # Calcular las coordenadas de inicio y fin del pentagrama con el margen adicional
+        start_x = 0
+        end_x = image_without_lines.shape[1]
+        end_y = int(start_y + (line_distance * 5) + staff_gap)  # Convertir a entero
+
+        # Recortar la región de interés de la imagen
+        staff_image = image_without_lines[int(start_y):end_y, start_x:end_x]  # Convertir a entero
+
+        # Agregar la imagen del pentagrama a la lista
+        staff_images.append(staff_image)
 
     return staff_images
 
