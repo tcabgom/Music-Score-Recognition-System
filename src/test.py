@@ -67,12 +67,12 @@ def test_project(image_path):
     print('\n[STEP 09/XX] Staff images successfully created')
     for i in range(len(staff_images)):
         cv2.imwrite('testing/07_divide_staff_images/07_image_' + str(i) + '.png', staff_images[i])
-    '''
+
     stem_lines = note_recognition.stem_filtering(staff_images)
     print('\n[STEP 10/XX] Stem lines successfully created')
     for i in range(len(stem_lines)):
         cv2.imwrite('testing/08_stem_filtering_images/08_image_' + str(i) + '.png', stem_lines[i])
-    '''
+
     sizes = note_recognition.size_filtering(staff_lines_v2)
     print('\n[STEP 11/XX] Sizes successfully created', "\n", sizes)
 
