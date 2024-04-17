@@ -64,15 +64,16 @@ def test_project(image_path):
     ######################################################## NOTE RECOGNITION ########################################################
 
     sizes = note_recognition.size_filtering(staff_lines_v2)
-    print('\n[STEP 11/XX] Sizes successfully created', "\n", sizes)
+    print('\n[STEP 09/XX] Sizes successfully created', "\n", sizes)
 
-    staff_images = note_recognition.divide_staff_v2(processed_image, staff_lines_v2, sizes[2])
-    print('\n[STEP 09_alt/XX] Staff images successfully created')
+    staff_images, staff_boundaries = note_recognition.divide_staff_v2(processed_image, staff_lines_v2, sizes[2])
+    print('\n[STEP 10/XX] Staff images successfully created')
     for i in range(len(staff_images)):
         cv2.imwrite('testing/07_divide_staff_images/07_image_' + str(i) + '.png', staff_images[i])
+    print('\n[STEP 10/XX] Staff boundaries:', staff_boundaries)
 
     stem_lines = note_recognition.stem_filtering(staff_images)
-    print('\n[STEP 10/XX] Stem lines successfully created')
+    print('\n[STEP 11/XX] Stem lines successfully created')
     for i in range(len(stem_lines)):
         cv2.imwrite('testing/08_stem_filtering_images/08_image_' + str(i) + '.png', stem_lines[i])
 
