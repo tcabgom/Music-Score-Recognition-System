@@ -148,8 +148,9 @@ def shape_filtering(note_head_size, num_labels, labels, stats):
         else:
             rate_of_symmetry = 0
 
+        print(rate_of_symmetry)
         # Threshold for considering as a note head
-        if rate_of_symmetry > 0.7:
+        if rate_of_symmetry > 0.1:
             note_head_centers.append(center)
 
     return note_head_centers

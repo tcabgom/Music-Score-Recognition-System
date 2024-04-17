@@ -58,8 +58,6 @@ def test_project(image_path):
     print('\n[STEP 07/XX] Processed image successfully created and saved')
 
     num_labels, labels, stats, _ = image_preprocessing.connected_component_labeling(processed_image)
-    print(num_labels)
-    print(labels)
     cv2.imwrite('testing/06_labeled_image.png', labels)
     print('\n[STEP 08/XX] Labeled image successfully created and saved. Detected', num_labels, 'components')
 
@@ -82,5 +80,5 @@ def test_project(image_path):
     print('\n[STEP 12/XX] Note head centers successfully created', "\n", note_head_centers)
 
 if __name__ == '__main__':
-    test_project('images/Test Sheet 8.png')
+    test_project('images/Test Sheet 1.png')
 
