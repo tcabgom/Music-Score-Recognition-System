@@ -26,8 +26,6 @@ notes_mapping = {
 
 
 def size_filtering(staff_lines):
-    #Ejemplo de staff_lines: [(328, 16), (549, 17), (769, 16), (990, 17), (1211, 16), (1432, 17), (1653, 16)]
-    # Calculamos la distancia media entre las lineas dentro de cada pentagrama, la distancia media entre pentagramas y la frontera entre pentagramas 
     staff_distance = []
     staff_lines_distance = [staff_lines[0][1]]
     staff_gap = []
@@ -177,7 +175,6 @@ def shape_filtering(note_head_size, num_labels, labels, stats):
         else:
             rate_of_symmetry = 0
 
-        print(rate_of_symmetry)
         # Threshold for considering as a note head
         if rate_of_symmetry > 0.1:
             note_head_centers.append(center)
