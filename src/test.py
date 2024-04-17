@@ -57,10 +57,10 @@ def test_project(image_path):
     cv2.imwrite('testing/05_processed_image.png', processed_image)
     print('\n[STEP 07/XX] Processed image successfully created and saved')
 
-    num_labels, labeled_image = image_preprocessing.connected_component_labeling(processed_image)
+    num_labels, labels, stats, _ = image_preprocessing.connected_component_labeling(processed_image)
     print(num_labels)
-    print(labeled_image)
-    cv2.imwrite('testing/06_labeled_image.png', labeled_image)
+    print(labels)
+    cv2.imwrite('testing/06_labeled_image.png', labels)
     print('\n[STEP 08/XX] Labeled image successfully created and saved. Detected', num_labels, 'components')
 
     ######################################################## NOTE RECOGNITION ########################################################
@@ -78,6 +78,8 @@ def test_project(image_path):
     sizes = note_recognition.size_filtering(staff_lines_v2)
     print('\n[STEP 11/XX] Sizes successfully created', "\n", sizes)
 
+    note_head_centers = note_recognition.shape_filtering(sizes[0], num_labels, labels, stats)
+    print('\n[STEP 12/XX] Note head centers successfully created', "\n", note_head_centers)
 
 if __name__ == '__main__':
     test_project('images/Test Sheet 8.png')
