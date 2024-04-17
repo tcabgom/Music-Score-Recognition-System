@@ -37,9 +37,9 @@ def size_filtering(staff_lines):
         distance = staff_lines[i][0] - staff_lines[i - 1][0]
         staff_distance.append(distance)
         staff_lines_distance.append(staff_lines[i][1])
-    staff_distance = np.mean(staff_distance).round()
-    lines_distance = np.mean(staff_lines_distance).round()
-    staff_gap = (staff_distance - lines_distance * 5)//2
+    staff_distance = int(np.mean(staff_distance).round())
+    lines_distance = int(np.mean(staff_lines_distance).round())
+    staff_gap = int((staff_distance - lines_distance * 5)//2)
     return lines_distance, staff_distance, staff_gap
 
 
@@ -80,6 +80,7 @@ def divide_staff(binary_image, staff_lines_positions):
 
 def divide_staff_v2(image_without_lines, staff_lines, staff_gap):
     staff_images = []
+    staff_boundaries = []
 
     # Iterar sobre las posiciones de las líneas de los pentagramas
     for start_y, line_distance in staff_lines:
@@ -92,15 +93,16 @@ def divide_staff_v2(image_without_lines, staff_lines, staff_gap):
         start_y -= staff_gap
         
         # Asegurarse de que start_y no sea negativo
-        start_y = max(0, start_y)
+        start_y = int(max(0, start_y))
 
         # Recortar la región de interés de la imagen
         staff_image = image_without_lines[int(start_y):end_y, start_x:end_x]  # Convertir a entero
 
         # Agregar la imagen del pentagrama a la lista
         staff_images.append(staff_image)
+        staff_boundaries.append((start_y, end_y))  # Guardar las coordenadas de inicio y fin
 
-    return staff_images
+    return staff_images, staff_boundaries
 
 
 def stem_filtering(staff_images):
@@ -117,7 +119,7 @@ def stem_filtering(staff_images):
     for staff_index in range(len(staff_images)):
         hist = vertical_projection(cv2.bitwise_not(staff_images[staff_index]))
         current_stem_lines = staff_images[staff_index].copy()  # Make a copy to avoid modifying the original image
-        threshold = int(np.max(hist) * 0.75)
+        threshold = int(np.max(hist) * 0.6)
         for x in range(current_stem_lines.shape[1]):
             if hist[x] >= threshold:
                 # Remove stem pixels in the current column
