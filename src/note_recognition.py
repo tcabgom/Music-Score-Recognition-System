@@ -25,8 +25,21 @@ notes_mapping = {
 }
 
 
-def get_head_size(staff_lines):
-    pass
+def size_filtering(staff_lines):
+    #[(328, 16), (549, 17), (769, 16), (990, 17), (1211, 16), (1432, 17), (1653, 16)]
+    # Calculamos la distancia entre las lineas del pentagrama
+    staff_distance = []
+    staff_lines_distance = [staff_lines[0][1]]
+    staff_gap = []
+    for i in range(1, len(staff_lines)):
+        distance = staff_lines[i][0] - staff_lines[i - 1][0]
+        staff_distance.append(distance)
+        staff_lines_distance.append(staff_lines[i][1])
+        staff_gap.append(staff_lines[i - 1][0] + (staff_lines[i - 1][1]*5) + distance)
+    # Calculamos la media de las distancias entre las lineas del pentagrama
+    staff_distance = np.mean(staff_distance).round()
+    lines_distance = np.mean(staff_lines_distance).round()
+    return lines_distance, staff_distance, staff_gap
 
 
 def vertical_projection(binary_image):
