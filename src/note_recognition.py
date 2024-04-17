@@ -31,6 +31,10 @@ def size_filtering(staff_lines):
     staff_distance = []
     staff_lines_distance = [staff_lines[0][1]]
     staff_gap = []
+
+    if len(staff_lines) == 1:
+        return staff_lines[0][1], 0, [0]
+    
     for i in range(1, len(staff_lines)):
         distance = staff_lines[i][0] - staff_lines[i - 1][0]
         staff_distance.append(distance)

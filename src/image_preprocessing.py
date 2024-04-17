@@ -55,4 +55,4 @@ def connected_component_labeling(binary_image):
         labeled_image (array): La imagen con componentes conectados etiquetados.
     '''
     inverted_image = cv2.bitwise_not(binary_image)
-    return cv2.connectedComponents(inverted_image)
+    return cv2.connectedComponentsWithStats(inverted_image)
