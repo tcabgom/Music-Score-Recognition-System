@@ -43,6 +43,25 @@ def size_filtering(staff_lines):
     return lines_distance, staff_distance, staff_gap
 
 
+def template_matching(binary_image, template, threshold=0.8):
+    # Convertir la imagen binaria y la plantilla a escala de grises
+    gray_image = cv2.cvtColor(binary_image, cv2.COLOR_BGR2GRAY)
+    template_gray = cv2.cvtColor(template, cv2.COLOR_BGR2GRAY)
+
+    # Realizar la correlación de plantillas
+    result = cv2.matchTemplate(gray_image, template_gray, cv2.TM_CCOEFF_NORMED)
+
+    # Encontrar las posiciones de coincidencias que superen el umbral
+    locations = np.where(result >= threshold)
+    locations = list(zip(*locations[::-1]))  # Convertir a formato (x, y)
+
+    # Obtener los valores de correlación para las coincidencias encontradas
+    correlation_values = [result[loc[1], loc[0]] for loc in locations]
+
+    # Devolver las posiciones de coincidencias y los valores de correlación
+    return locations, correlation_values
+
+
 def vertical_projection(binary_image):
     normalized_image = binary_image / 255
     vertical_sum = np.sum(normalized_image, axis=0)
