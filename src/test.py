@@ -77,10 +77,10 @@ def test_project(image_path):
     for i in range(len(stem_lines)):
         cv2.imwrite('testing/08_stem_filtering_images/08_image_' + str(i) + '.png', stem_lines[i])
 
-
-    note_head_centers = note_recognition.shape_filtering(sizes[0], num_labels, labels, stats)
-    print('\n[STEP 13/XX] Note head centers successfully created', "\n", note_head_centers)
+    for staff in stem_lines:
+        note_head_centers = note_recognition.shape_filtering(sizes[0], staff)
+        print('\n[STEP 13/XX] Note head centers successfully created', "\n", note_head_centers)
 
 if __name__ == '__main__':
-    test_project('images/Test Sheet 11.png')
+    test_project('images/Test Sheet 10.png')
 

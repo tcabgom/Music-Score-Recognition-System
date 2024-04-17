@@ -43,6 +43,25 @@ def size_filtering(staff_lines):
     return lines_distance, staff_distance, staff_gap
 
 
+def template_matching(binary_image, template, threshold=0.8):
+    # Convertir la imagen binaria y la plantilla a escala de grises
+    gray_image = cv2.cvtColor(binary_image, cv2.COLOR_BGR2GRAY)
+    template_gray = cv2.cvtColor(template, cv2.COLOR_BGR2GRAY)
+
+    # Realizar la correlación de plantillas
+    result = cv2.matchTemplate(gray_image, template_gray, cv2.TM_CCOEFF_NORMED)
+
+    # Encontrar las posiciones de coincidencias que superen el umbral
+    locations = np.where(result >= threshold)
+    locations = list(zip(*locations[::-1]))  # Convertir a formato (x, y)
+
+    # Obtener los valores de correlación para las coincidencias encontradas
+    correlation_values = [result[loc[1], loc[0]] for loc in locations]
+
+    # Devolver las posiciones de coincidencias y los valores de correlación
+    return locations, correlation_values
+
+
 def vertical_projection(binary_image):
     normalized_image = binary_image / 255
     vertical_sum = np.sum(normalized_image, axis=0)
@@ -116,15 +135,20 @@ def stem_filtering(staff_images):
         stem_lines (imagen): Una imagen de los tallos de las notas.
     '''
     stem_lines = []
+
+    kernel = np.ones(2, np.uint8)  
+
     for staff_index in range(len(staff_images)):
         hist = vertical_projection(cv2.bitwise_not(staff_images[staff_index]))
         current_stem_lines = staff_images[staff_index].copy()  # Make a copy to avoid modifying the original image
-        threshold = int(np.max(hist) * 0.6)
+        threshold = int(np.max(hist) * 0.55)
         for x in range(current_stem_lines.shape[1]):
             if hist[x] >= threshold:
                 # Remove stem pixels in the current column
-                current_stem_lines[:, x] = 255
-        stem_lines.append(current_stem_lines)
+                current_stem_lines[:, x] = 255          # Crear un kernel para el cierre morfológico
+        dilated_image = cv2.erode(current_stem_lines, kernel, iterations=2)       # Erosionar la imagen
+        processed_image = cv2.dilate(dilated_image, kernel, iterations=2) # Dilatar la imagen binaria para cerrar
+        stem_lines.append(processed_image)
     return stem_lines
 
 
@@ -137,9 +161,11 @@ def head_filtering_v2(image, head_size, staffs_positions):
     pass
 
 
-def shape_filtering(note_head_size, num_labels, labels, stats):
-
+def shape_filtering(note_head_size, binary_image):
     note_head_centers = []
+
+    inverted_image = cv2.bitwise_not(binary_image)
+    num_labels, labels, stats, _ = cv2.connectedComponentsWithStats(inverted_image)
 
     # Iterate through connected components
     for label in range(1, num_labels):  # Start from 1 to exclude background label
