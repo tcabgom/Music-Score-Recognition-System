@@ -90,18 +90,16 @@ def stem_filtering(staff_images):
     Salidas:
         stem_lines (imagen): Una imagen de los tallos de las notas.
     '''
-    stem_lines = None
-    for staff_index in range(0, len(staff_images)):
-        hist = vertical_projection(cv2.bitwise_not(staff_images[staff_index])) #se invierte para que cuente los bits negros, no los blancos
-        current_stem_lines = np.zeros_like(staff_images[staff_index])
-        threshold = int(np.max(hist)*0.4)
+    stem_lines = []
+    for staff_index in range(len(staff_images)):
+        hist = vertical_projection(cv2.bitwise_not(staff_images[staff_index]))
+        current_stem_lines = staff_images[staff_index].copy()  # Make a copy to avoid modifying the original image
+        threshold = int(np.max(hist) * 0.75)
         for x in range(current_stem_lines.shape[1]):
-            if hist[x] <= threshold:
-                cv2.line(current_stem_lines, (x, 0), (x, current_stem_lines.shape[0]), (255), 1)
-        if staff_index == 0:
-            stem_lines = current_stem_lines
-        else:
-            stem_lines = cv2.vconcat([stem_lines, current_stem_lines])
+            if hist[x] >= threshold:
+                # Remove stem pixels in the current column
+                current_stem_lines[:, x] = 255
+        stem_lines.append(current_stem_lines)
     return stem_lines
 
 
