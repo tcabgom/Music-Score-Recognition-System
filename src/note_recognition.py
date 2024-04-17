@@ -111,8 +111,48 @@ def head_filtering_v2(image, head_size, staffs_positions):
     pass
 
 
-def shape_filtering(image):
-    pass
+def shape_filtering(note_head_size, num_labels, labels, stats):
+
+    note_head_centers = []
+
+    # Iterate through connected components
+    for label in range(1, num_labels):  # Start from 1 to exclude background label
+        # Get the bounding box coordinates of the connected component
+        x, y, w, h, _ = stats[label]
+
+        # Calculate the center of the connected component
+        center = (x + w // 2, y + h // 2)
+
+        # Calculate the rate of symmetry
+        sum_r = 0
+        sum_s = 0
+        for i in range(x, x + w):
+            for j in range(y, y + h):
+                if labels[j, i] == label:
+                    # Calculate distance from center
+                    d = np.sqrt((i - center[0])**2 + (j - center[1])**2)
+                    # Calculate symmetric point
+                    symmetric_point = (center[0] - (i - center[0]), center[1] - (j - center[1]))
+                    # Check if symmetric point is within bounds
+                    if symmetric_point[0] >= x and symmetric_point[0] < x + w and symmetric_point[1] >= y and symmetric_point[1] < y + h:
+                        if labels[symmetric_point[1], symmetric_point[0]] == label:
+                            # Increment sum_s if symmetric point is part of the connected component
+                            sum_s += 1
+                            # Increment sum_r if the point satisfies the symmetry condition
+                            if abs(d - note_head_size) < 2:
+                                sum_r += 1
+
+        # Calculate rate of symmetry
+        if sum_s != 0:
+            rate_of_symmetry = sum_r / sum_s
+        else:
+            rate_of_symmetry = 0
+
+        # Threshold for considering as a note head
+        if rate_of_symmetry > 0.7:
+            note_head_centers.append(center)
+
+    return note_head_centers
 
 
 def pitch_analysis_v1(note_head_positions, staff_lines_positions):
