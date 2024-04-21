@@ -70,7 +70,10 @@ def test_project(image_path):
     print('\n[STEP 10/XX] Staff images successfully created')
     for i in range(len(staff_images)):
         cv2.imwrite('testing/07_divide_staff_images/07_image_' + str(i) + '.png', staff_images[i])
+        num_labels, labels, stats, _ = image_preprocessing.connected_component_labeling(staff_images[i])
+        cv2.imwrite('testing/07_divide_staff_images/07_image_labeled' + str(i) + '.png', labels)
     print('\n[STEP 10/XX] Staff boundaries:', staff_boundaries)
+
 
     stem_lines = note_recognition.stem_filtering(staff_images)
     print('\n[STEP 11/XX] Stem lines successfully created')
