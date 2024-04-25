@@ -175,7 +175,7 @@ def shape_filtering(note_head_size, binary_image):
         x, y, w, h, _ = stats[label]
 
         # Calculate the center of the connected component
-        center = (x + w // 2, y + h // 2)
+        center = (y + h // 2, x + w // 2)
 
         # Calculate the rate of symmetry
         sum_r = 0
@@ -210,6 +210,41 @@ def shape_filtering(note_head_size, binary_image):
 
 
 def pitch_analysis_v1(note_head_positions, staff_lines_positions):
+    '''
+    
+    '''
+    note_pitch = {}
+
+    for note in note_head_positions:
+        _, note_y = note
+        # TODO Primero voy a hacerlo que detecte las notas dentro del pentagrama, adaptar más tarde
+        note_staff = 0
+        note_staff_found = False
+        
+        # Detecta el pentagrama al que pertenece la nota
+        while not note_staff_found:
+            if note_y < staff_lines_positions[note_staff][4] or note_staff == len(staff_lines_positions) - 1:
+                note_staff_found = True
+            else:
+                note_staff += 1
+
+        # Detecta la posición de la nota dentro del pentagrama
+        potential_positions = []
+        for i in range(0,3):
+            potential_positions.append(staff_lines_positions[note_staff][i])
+            potential_positions.append(staff_lines_positions[note_staff][i] + (staff_lines_positions[note_staff][i+1] - staff_lines_positions[note_staff][i]) / 2)
+        potential_positions.append(staff_lines_positions[note_staff][4])
+
+        # Busca la posición más cercana a la nota seleccionando el indice del valor mas cercano
+        selected_position = min(range(len(potential_positions)), key=lambda i: abs(potential_positions[i]-note_y))
+        note_pitch[note] = notes_mapping[selected_position]
+
+    return note_pitch
+        
+
+
+
+def pitch_analysis_v2(note_head_positions, staff_lines_positions):
     """
     Analiza las posiciones de las cabezas de notas en un pentagrama y determina las notas asociadas.
 
