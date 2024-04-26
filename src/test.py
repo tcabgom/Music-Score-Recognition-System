@@ -84,9 +84,12 @@ def test_project(image_path):
         print('\n[STEP 13/XX] Note head centers successfully created', "\n", note_head_centers)
 
 
+    # DELETE, ONLY FOR TESTING
+    num_labels, labels, stats, _ = image_preprocessing.connected_component_labeling(processed_image)
+
     l = note_recognition.element_recognition(num_labels, labels, stats)
     cv2.imwrite('testing/07_divide_staff_images/ffffff.png', l)
 
 if __name__ == '__main__':
-    test_project('images/Test Sheet 8.png')
+    test_project('images/Test Sheet 6.png')
 
