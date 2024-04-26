@@ -75,15 +75,18 @@ def test_project(image_path):
     print('\n[STEP 10/XX] Staff boundaries:', staff_boundaries)
 
 
-    stem_lines = note_recognition.stem_filtering_on_bounding_boxes(staff_images)
+    stem_lines = note_recognition.stem_filtering_on_bounding_boxes(staff_images[0])
     print('\n[STEP 11/XX] Stem lines successfully created')
-    for i in range(len(stem_lines)):
-        cv2.imwrite('testing/08_stem_filtering_images/08_image_' + str(i) + '.png', stem_lines[i])
+    cv2.imwrite('testing/08_stem_filtering_images/08_image_' + '.png', stem_lines)
 
     for staff in stem_lines:
         note_head_centers = note_recognition.shape_filtering(sizes[0], staff)
         print('\n[STEP 13/XX] Note head centers successfully created', "\n", note_head_centers)
 
+
+    l = note_recognition.element_recognition(num_labels, labels, stats)
+    cv2.imwrite('testing/07_divide_staff_images/ffffff.png', l)
+
 if __name__ == '__main__':
-    test_project('images/Test Sheet 6.png')
+    test_project('images/Test Sheet 8.png')
 
