@@ -360,6 +360,3 @@ def element_recognition(num_labels, labels, stats):
             bounding_box[bounding_box != 0] = i
 
     return labels
-
-
-def get_bounding_box()
