@@ -126,7 +126,7 @@ def divide_staff_v2(image_without_lines, staff_lines, staff_gap):
 
 def stem_filtering(staff_images):
     '''
-    Recorre la lista de imágenes de pentagrama y realiza una segmentación por regiones donde genera una imagen con los tallos de las notas.
+    Recorre la lista de imágenes de pentagrama y realiza una segmentación por regiones donde genera una imagen sin los tallos de las notas.
 
     Parámetros:
         staff_images (array(imagen)): Un array con imágenes representando cada pentagrama.
@@ -152,6 +152,21 @@ def stem_filtering(staff_images):
         eroded_image_2 = cv2.erode(dilated_image_2, kernel, iterations=2)
         stem_lines.append(eroded_image_2)
     return stem_lines
+
+def stem_filtering_v2(staff_images_labeled):
+    '''
+    Recorre la lista de imágenes de pentagrama con distintos niveles de gris por cada componente conexta y realiza una segmentación por regiones donde genera una imagen sin los tallos de las notas.
+
+    Parámetros:
+        staff_images (array(imagen)): Un array con imágenes representando cada pentagrama donde cada componente conexa tiene un nivel de gris distinto.
+
+    Salidas:
+        stem_lines (imagen): Una imagen sin los tallos de las notas.
+    '''
+
+    kernel = np.ones(3, np.uint8)
+    stem_lines = []
+
 
 
 # En el paper se llama size filtering
