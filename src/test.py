@@ -75,7 +75,7 @@ def test_project(image_path):
     print('\n[STEP 10/XX] Staff boundaries:', staff_boundaries)
 
 
-    stem_lines = note_recognition.stem_filtering(staff_images)
+    stem_lines = note_recognition.stem_filtering_on_bounding_boxes(staff_images)
     print('\n[STEP 11/XX] Stem lines successfully created')
     for i in range(len(stem_lines)):
         cv2.imwrite('testing/08_stem_filtering_images/08_image_' + str(i) + '.png', stem_lines[i])
@@ -85,5 +85,5 @@ def test_project(image_path):
         print('\n[STEP 13/XX] Note head centers successfully created', "\n", note_head_centers)
 
 if __name__ == '__main__':
-    test_project('images/Test Sheet 8.png')
+    test_project('images/Test Sheet 6.png')
 

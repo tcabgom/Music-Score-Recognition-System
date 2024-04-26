@@ -153,20 +153,41 @@ def stem_filtering(staff_images):
         stem_lines.append(eroded_image_2)
     return stem_lines
 
-def stem_filtering_v2(staff_images_labeled):
-    '''
-    Recorre la lista de imágenes de pentagrama con distintos niveles de gris por cada componente conexta y realiza una segmentación por regiones donde genera una imagen sin los tallos de las notas.
+def extract_bounding_boxes(image, min_area_threshold=100):
+    # Convierte la imagen a escala de grises
+    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+    # Aplica un umbral para binarizar la imagen
+    _, thresh = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)
+    # Encuentra los contornos en la imagen binarizada
+    contours, _ = cv2.findContours(thresh, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    
+    bounding_boxes = []
+    # Itera sobre los contornos encontrados
+    for contour in contours:
+        # Calcula el área del contorno
+        area = cv2.contourArea(contour)
+        # Ignora los contornos muy pequeños (ruido)
+        if area > min_area_threshold:
+            # Encuentra la bounding box del contorno
+            x, y, w, h = cv2.boundingRect(contour)
+            # Agrega la bounding box a la lista
+            bounding_boxes.append((x, y, w, h))
+    
+    return bounding_boxes
 
-    Parámetros:
-        staff_images (array(imagen)): Un array con imágenes representando cada pentagrama donde cada componente conexa tiene un nivel de gris distinto.
 
-    Salidas:
-        stem_lines (imagen): Una imagen sin los tallos de las notas.
-    '''
-
-    kernel = np.ones(3, np.uint8)
-    stem_lines = []
-
+def stem_filtering_on_bounding_boxes(image):
+    bounding_boxes = extract_bounding_boxes(image)
+    filtered_images = []
+    for bbox in bounding_boxes:
+        # Extrae la región de interés (ROI) de la imagen original basada en la bounding box
+        x, y, w, h = bbox
+        roi = image[y:y+h, x:x+w]
+        # Aplica stem_filtering a la ROI
+        filtered_roi = stem_filtering([roi])[0]  # La función stem_filtering devuelve una lista, por lo tanto, tomamos el primer elemento
+        # Agrega la imagen filtrada a la lista de imágenes filtradas
+        filtered_images.append(filtered_roi)
+    return filtered_images
 
 
 # En el paper se llama size filtering
@@ -190,7 +211,7 @@ def shape_filtering(note_head_size, binary_image):
         x, y, w, h, _ = stats[label]
 
         # Calculate the center of the connected component
-        center = (x + w // 2, y + h // 2)
+        center = (y + h // 2, x + w // 2)
 
         # Calculate the rate of symmetry
         sum_r = 0
@@ -225,6 +246,41 @@ def shape_filtering(note_head_size, binary_image):
 
 
 def pitch_analysis_v1(note_head_positions, staff_lines_positions):
+    '''
+    
+    '''
+    note_pitch = {}
+
+    for note in note_head_positions:
+        _, note_y = note
+        # TODO Primero voy a hacerlo que detecte las notas dentro del pentagrama, adaptar más tarde
+        note_staff = 0
+        note_staff_found = False
+        
+        # Detecta el pentagrama al que pertenece la nota
+        while not note_staff_found:
+            if note_y < staff_lines_positions[note_staff][4] or note_staff == len(staff_lines_positions) - 1:
+                note_staff_found = True
+            else:
+                note_staff += 1
+
+        # Detecta la posición de la nota dentro del pentagrama
+        potential_positions = []
+        for i in range(0,3):
+            potential_positions.append(staff_lines_positions[note_staff][i])
+            potential_positions.append(staff_lines_positions[note_staff][i] + (staff_lines_positions[note_staff][i+1] - staff_lines_positions[note_staff][i]) / 2)
+        potential_positions.append(staff_lines_positions[note_staff][4])
+
+        # Busca la posición más cercana a la nota seleccionando el indice del valor mas cercano
+        selected_position = min(range(len(potential_positions)), key=lambda i: abs(potential_positions[i]-note_y))
+        note_pitch[note] = notes_mapping[selected_position]
+
+    return note_pitch
+        
+
+
+
+def pitch_analysis_v2(note_head_positions, staff_lines_positions):
     """
     Analiza las posiciones de las cabezas de notas en un pentagrama y determina las notas asociadas.
 
