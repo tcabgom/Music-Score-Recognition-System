@@ -24,7 +24,7 @@ notes_mapping = {
     15: "^^D",  # Re muy alto
 }
 
-templates = ["Flat.png", "Sharp.png", "Natural.png", "Treble_Clef.png", "Quarter_Rest.png", "Eighth_Rest.png", "Sixteenth_Rest.png"]
+templates = ["Flat.png", "Sharp.png", "Natural.png", "Treble_Clef.png", "Quarter_Rest.png", "Eighth_Rest.png", "Sixteenth_Rest.png", "Compass_Number.png"]
 
 TEMPLATE_THRESHOLD = 0.7
 
