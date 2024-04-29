@@ -155,8 +155,9 @@ def extract_bounding_boxes(image, min_area_threshold=100):
     return bounding_boxes
 
 
-def stem_filtering_on_bounding_boxes(image):
-    bounding_boxes = extract_bounding_boxes(image)
+def stem_filtering_on_bounding_boxes(image, bounding_boxes=None):
+    if bounding_boxes is None:
+        bounding_boxes = extract_bounding_boxes(image)
     combined_filtered_image = np.zeros_like(image)  # Crear una imagen en blanco del mismo tamaño que la original
     for bbox in bounding_boxes:
         # Extraer la región de interés (ROI) de la imagen original basada en la bounding box

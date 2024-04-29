@@ -4,7 +4,7 @@ import cv2
 import numpy as np
 
 TEMPLATES = ["Flat.png", "Sharp.png", "Natural.png", "Treble_Clef.png", "Quarter_Rest.png", "Eighth_Rest.png", "Sixteenth_Rest.png", "Compass_Number.png"]
-TEMPLATE_THRESHOLD = 0.7
+TEMPLATE_THRESHOLD = 0.75
 
 
 def template_matching(binary_image, template):
@@ -22,14 +22,16 @@ def template_matching(binary_image, template):
     return normalized_result
 
 
-def element_recognition(num_labels, labels, stats):
+def element_recognition(num_labels, labels, stats, returns_binary=False):
+    bounding_boxes = []
+    
     for i in range(1, num_labels):
         
         # Calculate the bounding box coordinates of the connected component
         x, y, w, h = stats[i, cv2.CC_STAT_LEFT], stats[i, cv2.CC_STAT_TOP], stats[i, cv2.CC_STAT_WIDTH], stats[i, cv2.CC_STAT_HEIGHT]
         bounding_box = labels[y:y+h, x:x+w]     # Crop the region of interest from the image
         bounding_box[bounding_box != 0] = 255   # Convert the cropped image to binary
-        
+        bounding_boxes.append((x, y, w, h))
         found = False
         for template in TEMPLATES:
 
@@ -50,13 +52,20 @@ def element_recognition(num_labels, labels, stats):
             # Check if result is greater than threshold
             if np.max(result) > TEMPLATE_THRESHOLD:
                 found = True
+                bounding_boxes.pop(-1)
                 # Calcular la nueva posición (x, y) en la imagen original
                 new_x = x + int((w - bounding_box.shape[1]) / 2)
                 new_y = y + int((h - bounding_box.shape[0]) / 2)
                 # Borrar el elemento de la imagen original
                 labels[new_y:new_y+bounding_box.shape[0], new_x:new_x+bounding_box.shape[1]][bounding_box != 0] = 0
                 break  # Salir del bucle una vez que se encuentra una coincidencia
-        if not found:
-            bounding_box[bounding_box != 0] = i
+        if returns_binary:
+            if not found:
+                bounding_box[bounding_box != 0] = i
+            else:
+                bounding_box[bounding_box != 0] = 255
 
-    return labels
+    #if not returns_binary:
+    #    labels = cv2.bitwise_not(labels) No va, sorry :p
+
+    return labels, bounding_boxes
