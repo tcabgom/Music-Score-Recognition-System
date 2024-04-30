@@ -83,7 +83,7 @@ def test_project(image_path):
         cv2.imwrite('testing/08_stem_filtering_images/08_image_V1_' + str(i) + '.png', stem_lines[i])
     
     '''
-    num_labels, labels, stats, _ = image_preprocessing.connected_component_labeling(staff_images[0])
+    num_labels, labels, stats, _ = image_preprocessing.connected_component_labeling(processed_image)
     labels, bounding_boxes = accidental_and_rest_recognition.element_recognition(num_labels, labels, stats, False)
 
     stem_lines = note_recognition.stem_filtering_on_bounding_boxes(labels, bounding_boxes)
