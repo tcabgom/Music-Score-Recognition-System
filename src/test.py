@@ -75,11 +75,11 @@ def test_project(image_path):
         cv2.imwrite('testing/07_divide_staff_images/07_image_labeled' + str(i) + '.png', labels)
     print('\n[STEP 10/XX] Staff boundaries:', staff_boundaries)
 
-    # Testea el stem filtering
+    # Testea el stem filtering v1
     stem_lines = note_recognition.stem_filtering(staff_images)
-    print('\n[STEP 11/XX] Stem lines successfully created')
+    print('\n[STEP 11/XX] Stem lines (v1) successfully created')
     for i in range(len(stem_lines)):
-        cv2.imwrite('testing/08_stem_filtering_images/08_image_' + str(i) + '.png', stem_lines[i])
+        cv2.imwrite('testing/08_stem_filtering_images/08_image_V1_' + str(i) + '.png', stem_lines[i])
     
     '''
     num_labels, labels, stats, _ = image_preprocessing.connected_component_labeling(staff_images[0])
