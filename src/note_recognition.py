@@ -129,6 +129,7 @@ def stem_filtering(staff_images):
             if hist[x] >= threshold:
                 # Remove stem pixels in the current column
                 current_stem_lines[:, x] = 255          # Crear un kernel para el cierre morfológico
+        current_stem_lines = current_stem_lines.astype(np.uint8)
         eroded_image_1 = cv2.erode(current_stem_lines, kernel, iterations=2)
         dilated_image_1 = cv2.dilate(eroded_image_1, kernel, iterations=2)
         dilated_image_2= cv2.dilate(dilated_image_1, kernel, iterations=2)
@@ -158,7 +159,7 @@ def extract_bounding_boxes(image, min_area_threshold=100):
 def stem_filtering_on_bounding_boxes(image, bounding_boxes=None):
     if bounding_boxes is None:
         bounding_boxes = extract_bounding_boxes(image)
-    combined_filtered_image = np.zeros_like(image)  # Crear una imagen en blanco del mismo tamaño que la original
+    combined_filtered_image = np.ones_like(image) * 255  # Crear una imagen en blanco del mismo tamaño que la original
     for bbox in bounding_boxes:
         # Extraer la región de interés (ROI) de la imagen original basada en la bounding box
         x, y, w, h = bbox
