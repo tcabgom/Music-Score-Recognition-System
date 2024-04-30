@@ -1,6 +1,7 @@
 import cv2
 import numpy as np
 import matplotlib as plt
+from image_preprocessing import connected_component_labeling
 from stuff_region_segmentation import get_histogram_image
 from math import floor
 
@@ -137,25 +138,20 @@ def stem_filtering(staff_images):
         stem_lines.append(eroded_image_2)
     return stem_lines
 
-def extract_bounding_boxes(image, min_area_threshold=100):
-    # Encuentra los contornos en la imagen binaria
-    contours, _ = cv2.findContours(image, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-    
+def extract_bounding_boxes(binary_image):
+
+    # Encontrar componentes conexas y sus estadísticas
+    num_labels, labels, stats, centroids = connected_component_labeling(binary_image)
     bounding_boxes = []
-    # Itera sobre los contornos encontrados
-    for contour in contours:
-        # Calcula el área del contorno
-        area = cv2.contourArea(contour)
-        # Ignora los contornos muy pequeños (ruido)
-        if area > min_area_threshold:
-            # Encuentra la bounding box del contorno
-            x, y, w, h = cv2.boundingRect(contour)
-            # Agrega la bounding box a la lista
-            bounding_boxes.append((x, y, w, h))
     
+    for i in range(1, num_labels):
+        
+        # Calculate the bounding box coordinates of the connected component
+        x, y, w, h = stats[i, cv2.CC_STAT_LEFT], stats[i, cv2.CC_STAT_TOP], stats[i, cv2.CC_STAT_WIDTH], stats[i, cv2.CC_STAT_HEIGHT]
+        bounding_boxes.append((x, y, w, h))
     return bounding_boxes
 
-
+'''
 def stem_filtering_on_bounding_boxes(image, bounding_boxes=None):
     if bounding_boxes is None:
         bounding_boxes = extract_bounding_boxes(image)
@@ -169,7 +165,52 @@ def stem_filtering_on_bounding_boxes(image, bounding_boxes=None):
         # Superponer la imagen filtrada en la imagen combinada
         combined_filtered_image[y:y+h, x:x+w] = filtered_roi
     return combined_filtered_image
+'''
 
+def stem_filtering_on_bounding_boxes(image, bounding_boxes=None):
+    if bounding_boxes is None:
+        bounding_boxes = extract_bounding_boxes(image)
+    combined_filtered_image = np.ones_like(image) * 255  # Crear una imagen en blanco del mismo tamaño que la original
+    for bbox in bounding_boxes:
+        # Extraer la región de interés (ROI) de la imagen original basada en la bounding box
+        x, y, w, h = bbox
+        roi = image[y:y+h, x:x+w]
+        # Aplicar stem_filtering a la ROI
+        filtered_roi = stem_filtering([roi])[0]  # La función stem_filtering devuelve una lista, por lo tanto, tomamos el primer elemento
+        # Superponer la imagen filtrada en la imagen combinada
+        combined_filtered_image[y:y+h, x:x+w] = filtered_roi
+    combined_filtered_image
+    return combined_filtered_image
+
+# Condición para filtrar bounding boxes basada en el ancho más del doble de la altura
+def aspect_ratio_condition(bbox):
+    x, y, w, h = bbox
+    aspect_ratio = w / h
+    return aspect_ratio >= 1.4
+
+# Función para eliminar componentes conexas que no cumplen con la condición
+def remove_components_and_find_notes(image, bounding_boxes, clean_image=False):
+    centers = []
+    for bbox in bounding_boxes:
+        x, y, w, h = bbox
+        if aspect_ratio_condition(bbox):
+            image[y:y+h, x:x+w] = 255  # Rellenar con blanco la región de la bounding box
+        else:
+            if not clean_image:
+                image[y:y+h, x:x+w] = 0
+            x_center = x + w // 2
+            y_center = y + h // 2
+            centers.append((x_center, y_center))
+    return image, centers
+
+def stem_filtering_and_notes_positions(image, bounding_boxes):
+
+    image = stem_filtering_on_bounding_boxes(image, bounding_boxes)
+    bounding_boxes = extract_bounding_boxes(image)
+
+    # Eliminar componentes conexas que no cumplen con la condición
+    final_image, centers = remove_components_and_find_notes(image, bounding_boxes)
+    return final_image, centers
 
 # En el paper se llama size filtering
 def head_filtering_v1(image, head_size, staffs_positions):
@@ -264,7 +305,6 @@ def pitch_analysis_v1(note_head_positions, staff_lines_positions):
         for i in range(1,5):
             potential_positions.append(staff_lines_positions[note_staff][0] - staff_lines_distance * i*0.5)
 
-        print(potential_positions)
         # Busca la posición más cercana a la nota seleccionando el indice del valor mas cercano
         selected_position = min(range(len(potential_positions)), key=lambda i: abs(potential_positions[i]-note_y))
         note_pitch[note] = notes_mapping[selected_position]
@@ -311,13 +351,11 @@ def pitch_analysis_v2(note_head_positions, staff_lines_positions):
 
         # PASO 2: Calculamos el tono de la nota en base a la distancia relativa entre la primera linea del pentagrama y la nota
         note_staff_first_line, note_staff_line_distance = staff_lines_positions[note_staff_list_position]
-        print(note_staff_first_line, note_staff_line_distance)
 
         closest_note = None
         closest_distance = None
         for i in range(16):
             distance = abs(((note_staff_first_line + note_staff_line_distance*5)-note_staff_line_distance*0.5*i) - note_y)
-            print(distance, closest_distance)
             if closest_distance == None or closest_distance > distance:
                 closest_note = i
                 closest_distance = distance
