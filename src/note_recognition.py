@@ -394,7 +394,7 @@ def draw_detected_notes_v1(sheet, detected_notes, staff_lines):
     thickness = 2
 
     sheet_color = cv2.cvtColor(sheet, cv2.COLOR_GRAY2BGR)
-
+    print("aaaaa",detected_notes)
     for note in dict.keys(detected_notes):
         note_x, note_y = note
         pitch_and_beat = detected_notes[note]

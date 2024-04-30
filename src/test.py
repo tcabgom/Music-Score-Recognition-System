@@ -99,7 +99,8 @@ def test_project(image_path):
     print(pitchs1)
 
 
-    l = note_recognition.draw_detected_notes_v1(binary_image, pitchs1, staff_lines_positions)
+    pitchs3 = accidental_and_rest_recognition.detect_accidentals(centers,pitchs1)
+    l = note_recognition.draw_detected_notes_v1(binary_image, pitchs3, staff_lines_positions)
     cv2.imwrite('testing/07_divide_staff_images/ffffff.png', l)
 
     # DELETE, ONLY FOR TESTING

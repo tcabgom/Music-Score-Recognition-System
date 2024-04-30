@@ -5,7 +5,7 @@ import numpy as np
 
 TEMPLATES = ["Sharp.png", "Flat.png", "Natural.png", "Quarter_Rest.png", "Eighth_Rest.png", "Sixteenth_Rest.png", "Treble_Clef.png", "Compass_Number.png"]
 TEMPLATE_THRESHOLD = 0.75
-
+ACCIDENTAL_MAPPING = {1: "#", 2: "b", 3:"-"}
 
 FIGURES_POSITIONS = list()
 for i in range(6):
@@ -77,22 +77,21 @@ def element_recognition(num_labels, labels, stats, returns_binary=False):
         labels = np.uint8(labels)
         _, labels = cv2.threshold(labels, 10, 255, cv2.THRESH_BINARY)
         labels = cv2.bitwise_not(labels)
-    print(FIGURES_POSITIONS)
     return labels, bounding_boxes
 
 
-def detect_accidentals(note_positions):
+def detect_accidentals(note_positions, note_dict):
     # Añadimos un nuevo valor para decir si hay o no figuras. 0: Nada, 1: Sostenido, 2: Bemol, 3: Becuadro
-    for note in note_positions:
-        note.append(0)
-
-    for figure_list in range(3):
-        for i in figure_list:
+    for figure_list in range(0, 3):
+        for i in FIGURES_POSITIONS[figure_list]:
             distances = []
             for note_position in note_positions:
-                distance = np.sqrt((i[0] - note_position[0])**2 + (i[1] - note_position[1])**2)
-                distances.append(distance)
+                # Calcular la distancia en x y filtrar las notas que estén a la izquierda
+                if note_position[0] > i[0]:  
+                    distance = np.sqrt((i[0] - note_position[0]) ** 2 + (i[1] - note_position[1]) ** 2)
+                    distances.append(distance)
+                else:
+                    distances.append(np.inf)  # Ignorar notas a la derecha
             closest_note_index = np.argmin(distances)
-            note_positions.replace(note_positions[closest_note_index], (note_positions[closest_note_index][0], note_positions[closest_note_index][1], i+1))
-    
-    return note_positions
+            note_dict[note_positions[closest_note_index]] += ACCIDENTAL_MAPPING[figure_list + 1]
+    return note_dict
