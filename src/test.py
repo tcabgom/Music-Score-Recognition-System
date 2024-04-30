@@ -90,9 +90,9 @@ def test_project(image_path):
     print('\n[STEP 11/XX] Stem lines successfully created')
     cv2.imwrite('testing/08_stem_filtering_images/08_image_V2' + '.png', stem_lines)
     
-    for staff in stem_lines:
-        note_head_centers = note_recognition.shape_filtering(sizes[0], staff)
-        print('\n[STEP 13/XX] Note head centers successfully created', "\n", note_head_centers)
+    #for staff in stem_lines:
+    #    note_head_centers = note_recognition.shape_filtering(sizes[0], staff)
+    #    print('\n[STEP 13/XX] Note head centers successfully created', "\n", note_head_centers)
 
 
     # DELETE, ONLY FOR TESTING
@@ -107,5 +107,12 @@ def test_note_recognition_v1_in_isolation():
     print(note_recognition.pitch_analysis_v1(note_positions, staff_lines))
 
 
+def test_note_recognition_v2_in_isolation():
+    staff_lines = [(100,15),(300,15),(500,15)]
+    note_positions = [(100,130),(100,322),(100,500),(200,152),(200,358),(200,500),(300,100),(300,500),(300,300)]
+    print(note_recognition.pitch_analysis_v2(note_positions, staff_lines))
+
 if __name__ == '__main__':
+    test_project('images\Test Sheet 8.png')
     test_note_recognition_v1_in_isolation()
+    test_note_recognition_v2_in_isolation()
