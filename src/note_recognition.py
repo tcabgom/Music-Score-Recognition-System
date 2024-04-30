@@ -190,17 +190,35 @@ def aspect_ratio_condition(bbox):
 
 # Función para eliminar componentes conexas que no cumplen con la condición
 def remove_components_and_find_notes(image, bounding_boxes, clean_image=False):
+    areas = []
     centers = []
+    bounding_boxes_aux = []
     for bbox in bounding_boxes:
         x, y, w, h = bbox
+
         if aspect_ratio_condition(bbox):
             image[y:y+h, x:x+w] = 255  # Rellenar con blanco la región de la bounding box
         else:
             if not clean_image:
                 image[y:y+h, x:x+w] = 0
-            x_center = x + w // 2
-            y_center = y + h // 2
-            centers.append((x_center, y_center))
+
+            area = w * h
+            areas.append(area)
+            bounding_boxes_aux.append(bbox)
+    
+    if areas:
+        mean_area = sum(areas) / len(areas)
+        
+        # Eliminar bounding boxes con área menor a la mitad de la media
+        for i, bbox in enumerate(bounding_boxes_aux):
+            x, y, w, h = bbox
+            if areas[i] < mean_area / 2:
+                image[y:y+h, x:x+w] = 255
+            else:
+                x_center = x + w // 2
+                y_center = y + h // 2
+                centers.append((x_center, y_center))
+    
     return image, centers
 
 def stem_filtering_and_notes_positions(image, bounding_boxes):

@@ -111,5 +111,5 @@ def test_note_recognition_v1_in_isolation():
 
 
 if __name__ == '__main__':
-    test_project('images\Test Sheet 8.png')
+    test_project('images\Test Sheet 2.png')
     test_note_recognition_v1_in_isolation()
