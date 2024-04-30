@@ -96,9 +96,8 @@ def test_project(image_path):
 
     # DELETE, ONLY FOR TESTING
     num_labels, labels, stats, _ = image_preprocessing.connected_component_labeling(processed_image)
-    l,b = accidental_and_rest_recognition.element_recognition(num_labels, labels, stats, False)
+    l,b = accidental_and_rest_recognition.element_recognition(num_labels, labels, stats, True)
     cv2.imwrite('testing/07_divide_staff_images/ffffff.png', l)
 
 if __name__ == '__main__':
     test_project('images/Test Sheet 8.png')
-
