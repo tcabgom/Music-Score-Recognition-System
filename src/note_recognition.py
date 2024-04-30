@@ -323,7 +323,6 @@ def pitch_analysis_v1(note_head_positions, staff_lines_positions):
         for i in range(1,5):
             potential_positions.append(staff_lines_positions[note_staff][0] - staff_lines_distance * i*0.5)
 
-        print(potential_positions)
         # Busca la posición más cercana a la nota seleccionando el indice del valor mas cercano
         selected_position = min(range(len(potential_positions)), key=lambda i: abs(potential_positions[i]-note_y))
         note_pitch[note] = notes_mapping[selected_position]
@@ -350,7 +349,9 @@ def pitch_analysis_v2(note_head_positions, staff_lines_positions):
     for staff_line in staff_lines_positions:
         y, distance = staff_line
         # Añadimos la posición minima y maxima de la nota en el pentagrama para poder detectar a cual de ellos pertenece
-        staff_lines_expected_area.append((y - distance, y + distance * 6))
+        staff_lines_expected_area.append(y - distance)
+        staff_lines_expected_area.append(y + distance * 6)
+
 
     for note in note_head_positions:
 
@@ -360,17 +361,23 @@ def pitch_analysis_v2(note_head_positions, staff_lines_positions):
         note_staff_list_position = None
 
         for i in range(len(staff_lines_expected_area)):
-            y_distance = staff_lines_expected_area - note_y
-            if y_distance is None or minimum_y_distance < minimum_y_distance:
+            y_distance = abs(staff_lines_expected_area[i] - note_y)
+            if minimum_y_distance is None or minimum_y_distance > y_distance:
                 minimum_y_distance = y_distance
                 note_staff_list_position = floor(i / 2)
+                
 
         # PASO 2: Calculamos el tono de la nota en base a la distancia relativa entre la primera linea del pentagrama y la nota
-        note_staff_first_line, note_staff_line_distance = staff_lines_positions[
-            note_staff_list_position
-        ]
-        difference = ((note_staff_first_line + note_staff_line_distance) - note_y) / 2
-        notes_pitch[note] = notes_mapping[difference]
+        note_staff_first_line, note_staff_line_distance = staff_lines_positions[note_staff_list_position]
+
+        closest_note = None
+        closest_distance = None
+        for i in range(16):
+            distance = abs(((note_staff_first_line + note_staff_line_distance*5)-note_staff_line_distance*0.5*i) - note_y)
+            if closest_distance == None or closest_distance > distance:
+                closest_note = i
+                closest_distance = distance
+        notes_pitch[note] = notes_mapping[closest_note]
 
     return notes_pitch
 
