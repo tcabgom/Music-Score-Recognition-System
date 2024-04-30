@@ -368,4 +368,35 @@ def beat_analysis(image):
     pass
 
 
+def draw_detected_notes_v1(sheet, detected_notes, staff_lines):
 
+    draw_note_y = []
+    for i in staff_lines:
+        draw_note_y.append(i[4]+(i[4]-i[3])*2)
+
+    font = cv2.FONT_HERSHEY_SIMPLEX
+    scale = 1
+    color = (0, 0, 255)
+    grosor = 3
+
+    for note in dict.keys(detected_notes):
+        note_x, note_y = note
+
+        closest_y = min(draw_note_y, key=lambda y: abs(y - note_y))
+        # Encuentra el índice de la posición más cercana
+        closest_index = draw_note_y.index(closest_y)
+        # Usa esa posición como note_y
+        note_y = closest_y
+        
+        coordinates = (note_x, closest_y)
+        pitch_and_beat = detected_notes[note]
+
+        text_size, _ = cv2.getTextSize(pitch_and_beat, font, scale, grosor)
+        text_x = note_x - text_size[0] // 2
+        text_y = note_y + 60 + text_size[1] // 2
+        
+        coordinates = (text_x, text_y)
+
+        cv2.putText(sheet, pitch_and_beat, coordinates, font, scale, color, grosor)
+        
+    return sheet

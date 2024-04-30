@@ -91,17 +91,21 @@ def test_project(image_path):
     cv2.imwrite('testing/08_stem_filtering_images/08_image_V2' + '.png', stem_lines)
     print('\n[STEP 11/XX] Note head centers:', centers)
     
-    centers2 = []
-    for staff in stem_lines:
-        note_head_centers = note_recognition.shape_filtering(sizes[0], staff)
-        centers2.append(note_head_centers)
-    print('\n[STEP 13/XX] Note head centers successfully created', "\n", note_head_centers)
 
+    pitchs1 = note_recognition.pitch_analysis_v1(centers,staff_lines_positions)
+    print(pitchs1)
+
+    pitchs1 = note_recognition.pitch_analysis_v2(centers,staff_lines_v2)
+    print(pitchs1)
+
+
+    l = note_recognition.draw_detected_notes_v1(binary_image, pitchs1, staff_lines_positions)
+    cv2.imwrite('testing/07_divide_staff_images/ffffff.png', l)
 
     # DELETE, ONLY FOR TESTING
     num_labels, labels, stats, _ = image_preprocessing.connected_component_labeling(processed_image)
     l,b = accidental_and_rest_recognition.element_recognition(num_labels, labels, stats, True)
-    cv2.imwrite('testing/07_divide_staff_images/ffffff.png', l)
+    
 
 
 def test_note_recognition_v1_in_isolation():
@@ -116,6 +120,6 @@ def test_note_recognition_v2_in_isolation():
     print(note_recognition.pitch_analysis_v2(note_positions, staff_lines))
 
 if __name__ == '__main__':
-    test_project('images\Test Sheet 8.png')
-    test_note_recognition_v1_in_isolation()
-    test_note_recognition_v2_in_isolation()
+    test_project('images\Test Sheet 1.png')
+    #test_note_recognition_v1_in_isolation()
+    #test_note_recognition_v2_in_isolation()
