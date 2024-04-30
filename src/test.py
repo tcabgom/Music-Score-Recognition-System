@@ -86,9 +86,9 @@ def test_project(image_path):
     num_labels, labels, stats, _ = image_preprocessing.connected_component_labeling(processed_image)
     labels, bounding_boxes = accidental_and_rest_recognition.element_recognition(num_labels, labels, stats, True)
 
-    stem_lines = note_recognition.stem_filtering_on_(labels, bounding_boxes)
+    stem_lines = note_recognition.stem_filtering_complete(labels, bounding_boxes)
     print('\n[STEP 11/XX] Stem lines successfully created')
-    cv2.imwrite('testing/08_stem_filtering_images/08_image_V2-' + '.png', stem_lines)
+    cv2.imwrite('testing/08_stem_filtering_images/08_image_V2' + '.png', stem_lines)
     
     for staff in stem_lines:
         note_head_centers = note_recognition.shape_filtering(sizes[0], staff)
@@ -100,5 +100,13 @@ def test_project(image_path):
     l,b = accidental_and_rest_recognition.element_recognition(num_labels, labels, stats, True)
     cv2.imwrite('testing/07_divide_staff_images/ffffff.png', l)
 
+
+def test_note_recognition_v1_in_isolation():
+    staff_lines = [[100,115,130,145,160],[200,215,230,245,260],[300,315,330,345,360]]
+    note_positions = [(100,130),(100,222),(100,300),(200,152),(200,258),(200,300),(300,100),(300,300),(300,200)]
+    print(note_recognition.pitch_analysis_v1(note_positions, staff_lines))
+
+
 if __name__ == '__main__':
-    test_project('images/Test Sheet 8.png')
+    test_project('images\Test Sheet 8.png')
+    test_note_recognition_v1_in_isolation()

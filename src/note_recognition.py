@@ -198,7 +198,7 @@ def remove_components(image, bounding_boxes):
             image[y:y+h, x:x+w] = 0
     return image
 
-def stem_filtering_on_(image, bounding_boxes):
+def stem_filtering_complete(image, bounding_boxes):
 
     image = stem_filtering_on_bounding_boxes(image, bounding_boxes)
     bounding_boxes = extract_bounding_boxes(image)
@@ -280,14 +280,27 @@ def pitch_analysis_v1(note_head_positions, staff_lines_positions):
                 note_staff_found = True
             else:
                 note_staff += 1
-
+                
         # Detecta la posición de la nota dentro del pentagrama
         potential_positions = []
-        for i in range(0,3):
-            potential_positions.append(staff_lines_positions[note_staff][i])
-            potential_positions.append(staff_lines_positions[note_staff][i] + (staff_lines_positions[note_staff][i+1] - staff_lines_positions[note_staff][i]) / 2)
-        potential_positions.append(staff_lines_positions[note_staff][4])
+        
+        # Añade las posiciones de las notas por debajo de la partitura
+        staff_lines_distance = staff_lines_positions[note_staff][4] - staff_lines_positions[note_staff][3]
+        potential_positions.append(staff_lines_positions[note_staff][4]+staff_lines_distance)
+        potential_positions.append(staff_lines_positions[note_staff][4]+staff_lines_distance/2)
 
+        # Añade las posiciones de las notas dentro de la partitura
+        for i in range(4,0,-1):
+            potential_positions.append(staff_lines_positions[note_staff][i])
+            potential_positions.append(staff_lines_positions[note_staff][i] + (staff_lines_positions[note_staff][i-1] - staff_lines_positions[note_staff][i]) / 2)
+        potential_positions.append(staff_lines_positions[note_staff][0])
+        
+
+        # Añade las posiciones de las notas por encima de la partitura
+        for i in range(1,5):
+            potential_positions.append(staff_lines_positions[note_staff][0] - staff_lines_distance * i*0.5)
+
+        print(potential_positions)
         # Busca la posición más cercana a la nota seleccionando el indice del valor mas cercano
         selected_position = min(range(len(potential_positions)), key=lambda i: abs(potential_positions[i]-note_y))
         note_pitch[note] = notes_mapping[selected_position]
