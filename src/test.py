@@ -75,13 +75,20 @@ def test_project(image_path):
         cv2.imwrite('testing/07_divide_staff_images/07_image_labeled' + str(i) + '.png', labels)
     print('\n[STEP 10/XX] Staff boundaries:', staff_boundaries)
 
+    # Testea el stem filtering
+    stem_lines = note_recognition.stem_filtering(staff_images)
+    print('\n[STEP 11/XX] Stem lines successfully created')
+    for i in range(len(stem_lines)):
+        cv2.imwrite('testing/08_stem_filtering_images/08_image_' + str(i) + '.png', stem_lines[i])
+    
+    '''
     num_labels, labels, stats, _ = image_preprocessing.connected_component_labeling(staff_images[0])
     labels, bounding_boxes = accidental_and_rest_recognition.element_recognition(num_labels, labels, stats, True)
 
     stem_lines = note_recognition.stem_filtering_on_bounding_boxes(labels, bounding_boxes)
     print('\n[STEP 11/XX] Stem lines successfully created')
     cv2.imwrite('testing/08_stem_filtering_images/08_image_' + '.png', stem_lines)
-
+    '''
     for staff in stem_lines:
         note_head_centers = note_recognition.shape_filtering(sizes[0], staff)
         print('\n[STEP 13/XX] Note head centers successfully created', "\n", note_head_centers)
