@@ -23,13 +23,15 @@ def template_matching(binary_image, template):
 
 
 def element_recognition(num_labels, labels, stats, returns_binary=False):
+    bounding_boxes = []
+    
     for i in range(1, num_labels):
         
         # Calculate the bounding box coordinates of the connected component
         x, y, w, h = stats[i, cv2.CC_STAT_LEFT], stats[i, cv2.CC_STAT_TOP], stats[i, cv2.CC_STAT_WIDTH], stats[i, cv2.CC_STAT_HEIGHT]
         bounding_box = labels[y:y+h, x:x+w]     # Crop the region of interest from the image
         bounding_box[bounding_box != 0] = 255   # Convert the cropped image to binary
-        
+        bounding_boxes.append((x, y, w, h))
         found = False
         for template in TEMPLATES:
 
@@ -50,6 +52,7 @@ def element_recognition(num_labels, labels, stats, returns_binary=False):
             # Check if result is greater than threshold
             if np.max(result) > TEMPLATE_THRESHOLD:
                 found = True
+                bounding_boxes.pop(-1)
                 # Calcular la nueva posición (x, y) en la imagen original
                 new_x = x + int((w - bounding_box.shape[1]) / 2)
                 new_y = y + int((h - bounding_box.shape[0]) / 2)
@@ -67,4 +70,4 @@ def element_recognition(num_labels, labels, stats, returns_binary=False):
         _, labels = cv2.threshold(labels, 10, 255, cv2.THRESH_BINARY)
         labels = cv2.bitwise_not(labels)
 
-    return labels
+    return labels, bounding_boxes
