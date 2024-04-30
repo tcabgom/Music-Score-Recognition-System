@@ -88,7 +88,7 @@ def test_project(image_path):
 
     stem_lines = note_recognition.stem_filtering_on_bounding_boxes(labels, bounding_boxes)
     print('\n[STEP 11/XX] Stem lines successfully created')
-    cv2.imwrite('testing/08_stem_filtering_images/08_image_V2' + '.png', stem_lines)
+    cv2.imwrite('testing/08_stem_filtering_images/08_image_V2-' + '.png', stem_lines)
     
     for staff in stem_lines:
         note_head_centers = note_recognition.shape_filtering(sizes[0], staff)

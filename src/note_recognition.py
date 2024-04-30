@@ -155,7 +155,7 @@ def extract_bounding_boxes(image, min_area_threshold=100):
     
     return bounding_boxes
 
-
+'''
 def stem_filtering_on_bounding_boxes(image, bounding_boxes=None):
     if bounding_boxes is None:
         bounding_boxes = extract_bounding_boxes(image)
@@ -169,6 +169,43 @@ def stem_filtering_on_bounding_boxes(image, bounding_boxes=None):
         # Superponer la imagen filtrada en la imagen combinada
         combined_filtered_image[y:y+h, x:x+w] = filtered_roi
     return combined_filtered_image
+'''
+
+def stem_filtering_on_bounding_boxes(image, bounding_boxes=None):
+    if bounding_boxes is None:
+        bounding_boxes = extract_bounding_boxes(image)
+    combined_filtered_image = np.ones_like(image) * 255  # Crear una imagen en blanco del mismo tamaño que la original
+    for bbox in bounding_boxes:
+        # Extraer la región de interés (ROI) de la imagen original basada en la bounding box
+        x, y, w, h = bbox
+        roi = image[y:y+h, x:x+w]
+        # Aplicar stem_filtering a la ROI
+        filtered_roi = stem_filtering([roi])[0]  # La función stem_filtering devuelve una lista, por lo tanto, tomamos el primer elemento
+        # Superponer la imagen filtrada en la imagen combinada
+        combined_filtered_image[y:y+h, x:x+w] = filtered_roi
+
+        # Contar el número de componentes conexas dentro de la ROI
+        num_labels, _, stats, _ = cv2.connectedComponentsWithStats(filtered_roi)
+
+        # Si hay tres componentes conexas, eliminar la más grande
+        if num_labels >= 3:
+            # Calcular el área de cada componente conectada
+            areas = stats[1:, cv2.CC_STAT_AREA]
+            # Encontrar el índice de la componente más grande
+            index_to_remove = np.argmax(areas) + 1  # Agregar 1 para compensar la primera fila de 'stats'
+            # Crear una máscara para la componente conectada más grande
+            largest_component_mask = np.zeros_like(filtered_roi)
+            largest_component_mask[stats[index_to_remove, cv2.CC_STAT_TOP]:stats[index_to_remove, cv2.CC_STAT_TOP] + stats[index_to_remove, cv2.CC_STAT_HEIGHT], 
+                                   stats[index_to_remove, cv2.CC_STAT_LEFT]:stats[index_to_remove, cv2.CC_STAT_LEFT] + stats[index_to_remove, cv2.CC_STAT_WIDTH]] = 255
+            # Eliminar la componente conectada más grande de la ROI
+            filtered_roi = cv2.bitwise_and(filtered_roi, cv2.bitwise_not(largest_component_mask))
+
+            # Actualizar la ROI con la componente conectada más grande eliminada
+            combined_filtered_image[y:y+h, x:x+w] = filtered_roi
+
+    return combined_filtered_image
+
+
 
 
 # En el paper se llama size filtering
