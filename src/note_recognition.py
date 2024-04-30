@@ -394,7 +394,41 @@ def draw_detected_notes_v1(sheet, detected_notes, staff_lines):
     thickness = 2
 
     sheet_color = cv2.cvtColor(sheet, cv2.COLOR_GRAY2BGR)
-    print("aaaaa",detected_notes)
+    for note in dict.keys(detected_notes):
+        note_x, note_y = note
+        pitch_and_beat = detected_notes[note]
+
+        # Buscar las líneas que están debajo de la nota
+        lines_below_note = [line for line in draw_note_y if line > note_y]
+
+        if lines_below_note:  # Si hay líneas debajo
+            # Encontrar la línea más cercana debajo de la nota
+            closest_y = min(lines_below_note, key=lambda y: abs(y - note_y) if y > note_y else float('inf'))
+            # Usar esa posición como note_y
+            note_y = closest_y
+
+            # Obtener el tamaño del texto para centrarlo
+            text_size, _ = cv2.getTextSize(pitch_and_beat, font, scale, thickness)
+            # Calcular las coordenadas del centro del texto
+            text_x = note_x - text_size[0] // 2
+            text_y = note_y + text_size[1] // 2
+
+            coordinates = (text_x, text_y)
+
+            cv2.putText(sheet_color, pitch_and_beat, coordinates, font, scale, color, thickness)
+
+    return sheet_color
+
+
+def draw_detected_notes_v2(sheet, detected_notes, staff_lines):
+    draw_note_y = [staff[0]+staff[1]*7 for staff in staff_lines]
+    print(draw_note_y)
+    font = cv2.FONT_HERSHEY_SIMPLEX
+    scale = 0.75
+    color = (0, 0, 255)
+    thickness = 2
+
+    sheet_color = cv2.cvtColor(sheet, cv2.COLOR_GRAY2BGR)
     for note in dict.keys(detected_notes):
         note_x, note_y = note
         pitch_and_beat = detected_notes[note]

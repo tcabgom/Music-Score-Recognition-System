@@ -95,12 +95,14 @@ def test_project(image_path):
     pitchs1 = note_recognition.pitch_analysis_v1(centers,staff_lines_positions)
     print(pitchs1)
 
-    pitchs1 = note_recognition.pitch_analysis_v2(centers,staff_lines_v2)
-    print(pitchs1)
+    pitchs2 = note_recognition.pitch_analysis_v2(centers,staff_lines_v2)
+    print(pitchs2)
 
 
     pitchs3 = accidental_and_rest_recognition.detect_accidentals(centers,pitchs1)
-    l = note_recognition.draw_detected_notes_v1(binary_image, pitchs3, staff_lines_positions)
+    pitchs4 = accidental_and_rest_recognition.detect_accidentals(centers,pitchs2)
+    #l = note_recognition.draw_detected_notes_v1(binary_image, pitchs3, staff_lines_positions)
+    l = note_recognition.draw_detected_notes_v2(binary_image, pitchs4, staff_lines_v2)
     cv2.imwrite('testing/07_divide_staff_images/ffffff.png', l)
 
     # DELETE, ONLY FOR TESTING
@@ -121,6 +123,6 @@ def test_note_recognition_v2_in_isolation():
     print(note_recognition.pitch_analysis_v2(note_positions, staff_lines))
 
 if __name__ == '__main__':
-    test_project('images\Test Sheet 8.png')
+    test_project('images\Test Sheet 11.png')
     test_note_recognition_v1_in_isolation()
     test_note_recognition_v2_in_isolation()
