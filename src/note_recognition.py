@@ -190,17 +190,35 @@ def aspect_ratio_condition(bbox):
 
 # Función para eliminar componentes conexas que no cumplen con la condición
 def remove_components_and_find_notes(image, bounding_boxes, clean_image=False):
+    areas = []
     centers = []
+    bounding_boxes_aux = []
     for bbox in bounding_boxes:
         x, y, w, h = bbox
+
         if aspect_ratio_condition(bbox):
             image[y:y+h, x:x+w] = 255  # Rellenar con blanco la región de la bounding box
         else:
             if not clean_image:
                 image[y:y+h, x:x+w] = 0
-            x_center = x + w // 2
-            y_center = y + h // 2
-            centers.append((x_center, y_center))
+
+            area = w * h
+            areas.append(area)
+            bounding_boxes_aux.append(bbox)
+    
+    if areas:
+        mean_area = sum(areas) / len(areas)
+        
+        # Eliminar bounding boxes con área menor a la mitad de la media
+        for i, bbox in enumerate(bounding_boxes_aux):
+            x, y, w, h = bbox
+            if areas[i] < mean_area / 2:
+                image[y:y+h, x:x+w] = 255
+            else:
+                x_center = x + w // 2
+                y_center = y + h // 2
+                centers.append((x_center, y_center))
+    
     return image, centers
 
 def stem_filtering_and_notes_positions(image, bounding_boxes):
@@ -369,34 +387,35 @@ def beat_analysis(image):
 
 
 def draw_detected_notes_v1(sheet, detected_notes, staff_lines):
-
-    draw_note_y = []
-    for i in staff_lines:
-        draw_note_y.append(i[4]+(i[4]-i[3])*2)
-
+    draw_note_y = [line[4] + (line[4] - line[3]) * 3 for line in staff_lines]
     font = cv2.FONT_HERSHEY_SIMPLEX
-    scale = 1
+    scale = 0.75
     color = (0, 0, 255)
-    grosor = 3
+    thickness = 2
+
+    sheet_color = cv2.cvtColor(sheet, cv2.COLOR_GRAY2BGR)
 
     for note in dict.keys(detected_notes):
         note_x, note_y = note
-
-        closest_y = min(draw_note_y, key=lambda y: abs(y - note_y))
-        # Encuentra el índice de la posición más cercana
-        closest_index = draw_note_y.index(closest_y)
-        # Usa esa posición como note_y
-        note_y = closest_y
-        
-        coordinates = (note_x, closest_y)
         pitch_and_beat = detected_notes[note]
 
-        text_size, _ = cv2.getTextSize(pitch_and_beat, font, scale, grosor)
-        text_x = note_x - text_size[0] // 2
-        text_y = note_y + 60 + text_size[1] // 2
-        
-        coordinates = (text_x, text_y)
+        # Buscar las líneas que están debajo de la nota
+        lines_below_note = [line for line in draw_note_y if line > note_y]
 
-        cv2.putText(sheet, pitch_and_beat, coordinates, font, scale, color, grosor)
-        
-    return sheet
+        if lines_below_note:  # Si hay líneas debajo
+            # Encontrar la línea más cercana debajo de la nota
+            closest_y = min(lines_below_note, key=lambda y: abs(y - note_y) if y > note_y else float('inf'))
+            # Usar esa posición como note_y
+            note_y = closest_y
+
+            # Obtener el tamaño del texto para centrarlo
+            text_size, _ = cv2.getTextSize(pitch_and_beat, font, scale, thickness)
+            # Calcular las coordenadas del centro del texto
+            text_x = note_x - text_size[0] // 2
+            text_y = note_y + text_size[1] // 2
+
+            coordinates = (text_x, text_y)
+
+            cv2.putText(sheet_color, pitch_and_beat, coordinates, font, scale, color, thickness)
+
+    return sheet_color
