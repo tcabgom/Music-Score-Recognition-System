@@ -167,9 +167,11 @@ def stem_filtering_on_bounding_boxes(image, bounding_boxes=None):
     return combined_filtered_image
 '''
 
+
 def stem_filtering_on_bounding_boxes(image, bounding_boxes=None):
     if bounding_boxes is None:
         bounding_boxes = extract_bounding_boxes(image)
+    
     combined_filtered_image = np.ones_like(image) * 255  # Crear una imagen en blanco del mismo tamaño que la original
     for bbox in bounding_boxes:
         # Extraer la región de interés (ROI) de la imagen original basada en la bounding box
@@ -183,10 +185,11 @@ def stem_filtering_on_bounding_boxes(image, bounding_boxes=None):
     return combined_filtered_image
 
 # Condición para filtrar bounding boxes basada en el ancho más del doble de la altura
-def aspect_ratio_condition(bbox):
+def aspect_ratio_condition(bbox, threshold = 1.4):
     x, y, w, h = bbox
     aspect_ratio = w / h
-    return aspect_ratio >= 1.4
+    return aspect_ratio >= threshold
+
 
 # Función para eliminar componentes conexas que no cumplen con la condición
 def remove_components_and_find_notes(image, bounding_boxes, clean_image=False):
