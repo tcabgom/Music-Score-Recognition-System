@@ -82,8 +82,9 @@ def element_recognition(num_labels, labels, stats, returns_binary=False):
 
 
 def detect_accidentals(note_positions):
+    # Añadimos un nuevo valor para decir si hay o no figuras. 0: Nada, 1: Sostenido, 2: Bemol, 3: Becuadro
     for note in note_positions:
-        note.append("0")
+        note.append(0)
 
     for figure_list in range(3):
         for i in figure_list:
@@ -92,6 +93,6 @@ def detect_accidentals(note_positions):
                 distance = np.sqrt((i[0] - note_position[0])**2 + (i[1] - note_position[1])**2)
                 distances.append(distance)
             closest_note_index = np.argmin(distances)
-            note_positions.replace(note_positions[closest_note_index], (note_positions[closest_note_index][0], note_positions[closest_note_index][1], i))
+            note_positions.replace(note_positions[closest_note_index], (note_positions[closest_note_index][0], note_positions[closest_note_index][1], i+1))
     
     return note_positions
