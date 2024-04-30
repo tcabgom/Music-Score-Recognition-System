@@ -62,7 +62,9 @@ def element_recognition(num_labels, labels, stats, returns_binary=False):
             else:
                 bounding_box[bounding_box != 0] = 255
 
-    #if not returns_binary:
-    #    labels = cv2.bitwise_not(labels) No va, sorry :p
+    if not returns_binary:
+        labels = np.uint8(labels)
+        _, labels = cv2.threshold(labels, 10, 255, cv2.THRESH_BINARY)
+        labels = cv2.bitwise_not(labels)
 
     return labels
