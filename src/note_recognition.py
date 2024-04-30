@@ -189,23 +189,28 @@ def aspect_ratio_condition(bbox):
     return aspect_ratio >= 1.4
 
 # Función para eliminar componentes conexas que no cumplen con la condición
-def remove_components(image, bounding_boxes):
+def remove_components_and_find_notes(image, bounding_boxes, clean_image=False):
+    centers = []
     for bbox in bounding_boxes:
         x, y, w, h = bbox
         if aspect_ratio_condition(bbox):
             image[y:y+h, x:x+w] = 255  # Rellenar con blanco la región de la bounding box
         else:
-            image[y:y+h, x:x+w] = 0
-    return image
+            if not clean_image:
+                image[y:y+h, x:x+w] = 0
+            x_center = x + w // 2
+            y_center = y + h // 2
+            centers.append((x_center, y_center))
+    return image, centers
 
-def stem_filtering_complete(image, bounding_boxes):
+def stem_filtering_and_notes_positions(image, bounding_boxes):
 
     image = stem_filtering_on_bounding_boxes(image, bounding_boxes)
     bounding_boxes = extract_bounding_boxes(image)
 
     # Eliminar componentes conexas que no cumplen con la condición
-    final_image = remove_components(image, bounding_boxes)
-    return final_image
+    final_image, centers = remove_components_and_find_notes(image, bounding_boxes)
+    return final_image, centers
 
 # En el paper se llama size filtering
 def head_filtering_v1(image, head_size, staffs_positions):

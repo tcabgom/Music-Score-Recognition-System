@@ -86,13 +86,16 @@ def test_project(image_path):
     num_labels, labels, stats, _ = image_preprocessing.connected_component_labeling(processed_image)
     labels, bounding_boxes = accidental_and_rest_recognition.element_recognition(num_labels, labels, stats, True)
 
-    stem_lines = note_recognition.stem_filtering_complete(labels, bounding_boxes)
+    stem_lines, centers = note_recognition.stem_filtering_and_notes_positions(labels, bounding_boxes)
     print('\n[STEP 11/XX] Stem lines successfully created')
     cv2.imwrite('testing/08_stem_filtering_images/08_image_V2' + '.png', stem_lines)
+    print('\n[STEP 11/XX] Note head centers:', centers)
     
+    centers2 = []
     for staff in stem_lines:
         note_head_centers = note_recognition.shape_filtering(sizes[0], staff)
-        print('\n[STEP 13/XX] Note head centers successfully created', "\n", note_head_centers)
+        centers2.append(note_head_centers)
+    print('\n[STEP 13/XX] Note head centers successfully created', "\n", note_head_centers)
 
 
     # DELETE, ONLY FOR TESTING
