@@ -1,6 +1,7 @@
 import cv2
 import numpy as np
 import matplotlib as plt
+from image_preprocessing import connected_component_labeling
 from stuff_region_segmentation import get_histogram_image
 from math import floor
 
@@ -137,22 +138,17 @@ def stem_filtering(staff_images):
         stem_lines.append(eroded_image_2)
     return stem_lines
 
-def extract_bounding_boxes(image, min_area_threshold=100):
-    # Encuentra los contornos en la imagen binaria
-    contours, _ = cv2.findContours(image, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-    
+def extract_bounding_boxes(binary_image):
+
+    # Encontrar componentes conexas y sus estadísticas
+    num_labels, labels, stats, centroids = connected_component_labeling(binary_image)
     bounding_boxes = []
-    # Itera sobre los contornos encontrados
-    for contour in contours:
-        # Calcula el área del contorno
-        area = cv2.contourArea(contour)
-        # Ignora los contornos muy pequeños (ruido)
-        if area > min_area_threshold:
-            # Encuentra la bounding box del contorno
-            x, y, w, h = cv2.boundingRect(contour)
-            # Agrega la bounding box a la lista
-            bounding_boxes.append((x, y, w, h))
     
+    for i in range(1, num_labels):
+        
+        # Calculate the bounding box coordinates of the connected component
+        x, y, w, h = stats[i, cv2.CC_STAT_LEFT], stats[i, cv2.CC_STAT_TOP], stats[i, cv2.CC_STAT_WIDTH], stats[i, cv2.CC_STAT_HEIGHT]
+        bounding_boxes.append((x, y, w, h))
     return bounding_boxes
 
 '''
@@ -183,30 +179,33 @@ def stem_filtering_on_bounding_boxes(image, bounding_boxes=None):
         filtered_roi = stem_filtering([roi])[0]  # La función stem_filtering devuelve una lista, por lo tanto, tomamos el primer elemento
         # Superponer la imagen filtrada en la imagen combinada
         combined_filtered_image[y:y+h, x:x+w] = filtered_roi
-
-        # Contar el número de componentes conexas dentro de la ROI
-        num_labels, _, stats, _ = cv2.connectedComponentsWithStats(filtered_roi)
-
-        # Si hay tres componentes conexas, eliminar la más grande
-        if num_labels >= 3:
-            # Calcular el área de cada componente conectada
-            areas = stats[1:, cv2.CC_STAT_AREA]
-            # Encontrar el índice de la componente más grande
-            index_to_remove = np.argmax(areas) + 1  # Agregar 1 para compensar la primera fila de 'stats'
-            # Crear una máscara para la componente conectada más grande
-            largest_component_mask = np.zeros_like(filtered_roi)
-            largest_component_mask[stats[index_to_remove, cv2.CC_STAT_TOP]:stats[index_to_remove, cv2.CC_STAT_TOP] + stats[index_to_remove, cv2.CC_STAT_HEIGHT], 
-                                   stats[index_to_remove, cv2.CC_STAT_LEFT]:stats[index_to_remove, cv2.CC_STAT_LEFT] + stats[index_to_remove, cv2.CC_STAT_WIDTH]] = 255
-            # Eliminar la componente conectada más grande de la ROI
-            filtered_roi = cv2.bitwise_and(filtered_roi, cv2.bitwise_not(largest_component_mask))
-
-            # Actualizar la ROI con la componente conectada más grande eliminada
-            combined_filtered_image[y:y+h, x:x+w] = filtered_roi
-
+    combined_filtered_image
     return combined_filtered_image
 
+# Condición para filtrar bounding boxes basada en el ancho más del doble de la altura
+def aspect_ratio_condition(bbox):
+    x, y, w, h = bbox
+    aspect_ratio = w / h
+    return aspect_ratio >= 1.4
 
+# Función para eliminar componentes conexas que no cumplen con la condición
+def remove_components(image, bounding_boxes):
+    for bbox in bounding_boxes:
+        x, y, w, h = bbox
+        if aspect_ratio_condition(bbox):
+            image[y:y+h, x:x+w] = 255  # Rellenar con blanco la región de la bounding box
+        else:
+            image[y:y+h, x:x+w] = 0
+    return image
 
+def stem_filtering_on_(image, bounding_boxes):
+
+    image = stem_filtering_on_bounding_boxes(image, bounding_boxes)
+    bounding_boxes = extract_bounding_boxes(image)
+
+    # Eliminar componentes conexas que no cumplen con la condición
+    final_image = remove_components(image, bounding_boxes)
+    return final_image
 
 # En el paper se llama size filtering
 def head_filtering_v1(image, head_size, staffs_positions):
