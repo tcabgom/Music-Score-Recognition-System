@@ -123,6 +123,6 @@ def test_note_recognition_v2_in_isolation():
     print(note_recognition.pitch_analysis_v2(note_positions, staff_lines))
 
 if __name__ == '__main__':
-    test_project('images\Test Sheet 11.png')
+    test_project('images\Test Sheet 8.png')
     test_note_recognition_v1_in_isolation()
     test_note_recognition_v2_in_isolation()
