@@ -84,7 +84,7 @@ def test_project(image_path):
     
     '''
     num_labels, labels, stats, _ = image_preprocessing.connected_component_labeling(staff_images[0])
-    labels, bounding_boxes = accidental_and_rest_recognition.element_recognition(num_labels, labels, stats, True)
+    labels, bounding_boxes = accidental_and_rest_recognition.element_recognition(num_labels, labels, stats, False)
 
     stem_lines = note_recognition.stem_filtering_on_bounding_boxes(labels, bounding_boxes)
     print('\n[STEP 11/XX] Stem lines successfully created')
