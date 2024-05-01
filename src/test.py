@@ -71,6 +71,8 @@ def test_sheet(image_path, base_dir):
     cv2.imwrite(f'{base_dir}/07_note_heads.png', stem_lines)
     print(f"\nNote head centers: {centers}")
 
+    cv2.imwrite(f'{base_dir}/08_note_heads_and_staff_lines.png', cv2.bitwise_and(stem_lines, staff_lines))
+
     pitchs_v1 = note_recognition.pitch_analysis_v1(centers, staff_lines_v1)
     print(f"\nPitchs (v1): {pitchs_v1}")
 
@@ -90,8 +92,8 @@ def test_sheet(image_path, base_dir):
     result_v1 = note_recognition.draw_detected_notes_v1(binary_image, detected_notes_v1, staff_lines_v1)
     result_v2 = note_recognition.draw_detected_notes_v2(binary_image, detected_notes_v2, staff_lines_v2)
 
-    cv2.imwrite(f'{base_dir}/08_detected_notes_v1.png', result_v1)
-    cv2.imwrite(f'{base_dir}/09_detected_notes_v2.png', result_v2)
+    cv2.imwrite(f'{base_dir}/09_detected_notes_result_v1.png', result_v1)
+    cv2.imwrite(f'{base_dir}/10_detected_notes_result_v2.png', result_v2)
 
 def delete_testing_folders():
     folder = 'testing'
