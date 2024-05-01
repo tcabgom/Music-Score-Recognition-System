@@ -4,7 +4,7 @@ import cv2
 import numpy as np
 
 TEMPLATES = ["Sharp.png", "Flat.png", "Natural.png", "Quarter_Rest.png", "Eighth_Rest.png", "Sixteenth_Rest.png", "Treble_Clef.png", "Compass_Number.png", "Full.png"]
-TEMPLATE_THRESHOLD = 0.75
+TEMPLATE_THRESHOLD = 0.8
 ACCIDENTAL_MAPPING = {1: "#", 2: "b", 3:"-"}
 
 FIGURES_POSITIONS = list()
@@ -62,10 +62,10 @@ def element_recognition(num_labels, labels, stats, returns_binary=False):
                 new_x = x + int((w - bounding_box.shape[1]) / 2)
                 new_y = y + int((h - bounding_box.shape[0]) / 2)
                 # Borrar el elemento de la imagen original
-                if j != 9:
+                if j != 8:
                     labels[new_y:new_y+bounding_box.shape[0], new_x:new_x+bounding_box.shape[1]][bounding_box != 0] = 0
                 else:
-                    pass # AQUI SE RELLENA LA REDONDA
+                    labels[new_y:new_y+bounding_box.shape[0], new_x:new_x+bounding_box.shape[1]] = 255
                 if j < 6:
                     FIGURES_POSITIONS[j].append((new_x, new_y, w, h))
 

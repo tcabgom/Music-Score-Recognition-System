@@ -1,4 +1,5 @@
 import os
+import shutil
 import cv2
 import sys
 import numpy as np
@@ -85,7 +86,7 @@ def test_project(image_path):
     '''
     num_labels, labels, stats, _ = image_preprocessing.connected_component_labeling(processed_image)
     labels, bounding_boxes = accidental_and_rest_recognition.element_recognition(num_labels, labels, stats, True)
-
+    cv2.imwrite('testing/07_divide_staff_images/ffffff.png', labels)
     stem_lines, centers = note_recognition.stem_filtering_and_notes_positions(labels, bounding_boxes)
     print('\n[STEP 11/XX] Stem lines successfully created')
     cv2.imwrite('testing/08_stem_filtering_images/08_image_V2' + '.png', stem_lines)
@@ -101,7 +102,7 @@ def test_project(image_path):
 
     pitchs3 = accidental_and_rest_recognition.detect_accidentals(centers,pitchs1)
     pitchs4 = accidental_and_rest_recognition.detect_accidentals(centers,pitchs2)
-    #l = note_recognition.draw_detected_notes_v1(binary_image, pitchs3, staff_lines_positions)
+    l = note_recognition.draw_detected_notes_v1(binary_image, pitchs3, staff_lines_positions)
     l = note_recognition.draw_detected_notes_v2(binary_image, pitchs4, staff_lines_v2)
     cv2.imwrite('testing/07_divide_staff_images/ffffff.png', l)
 
@@ -122,7 +123,109 @@ def test_note_recognition_v2_in_isolation():
     note_positions = [(100,130),(100,322),(100,500),(200,152),(200,358),(200,500),(300,100),(300,500),(300,300)]
     print(note_recognition.pitch_analysis_v2(note_positions, staff_lines))
 
+
+
+
+def test_project_refactored(tested_sheets):
+    for sheet in tested_sheets:
+        # Extraer el nombre del archivo sin extensión
+        sheet_name = os.path.splitext(os.path.basename(sheet))[0]
+        # Crear el directorio para esta hoja si no existe
+        sheet_dir = 'testing/' + sheet_name
+        os.makedirs(sheet_dir, exist_ok=True)
+        
+        # Crear el archivo de registro en el directorio
+        log_file_path = os.path.join(sheet_dir, 'log.txt')
+        with open(log_file_path, 'w') as log_file:
+            # Redirigir stdout al archivo de registro
+            sys.stdout = log_file
+            print("Archivo log para:", sheet)
+            test_sheet(sheet, sheet_dir)
+            # Restaurar stdout
+            sys.stdout = sys.__stdout__
+
+
+def test_sheet(image_path, base_dir):
+
+    image = cv2.imread(image_path, 0)
+
+    binary_image = stuff_region_segmentation.binary_transform(image)
+    cv2.imwrite(f'{base_dir}/00_binary_transform_result.png', binary_image)
+
+    horizontal_sum = stuff_region_segmentation.horizontal_projection(binary_image)
+    hist_image = stuff_region_segmentation.get_histogram_image(binary_image, horizontal_sum)
+    cv2.imwrite(f'{base_dir}/01_horizontal_projection_result.png', hist_image)
+
+    staff_lines = stuff_region_segmentation.region_segmentation(binary_image, horizontal_sum)
+    cv2.imwrite(f'{base_dir}/02_region_segmentation_result.png', staff_lines)
+
+    columns_with_lines = stuff_region_segmentation.get_black_column_positions(staff_lines)
+    staff_lines_v1, max_thickness = stuff_region_segmentation.get_staff_lines_positions_and_thickness(columns_with_lines)
+    staff_lines_v2 = stuff_region_segmentation.get_staff_lines_positions_v2(columns_with_lines)
+
+    print(f"\nStaff lines positions (v1): {staff_lines_v1}")
+    print(f"\nStaff lines positions (v2): {staff_lines_v2}")
+    print(f"\nMaximum line thickness: {max_thickness}")
+
+    image_without_lines = image_preprocessing.staff_line_filtering(binary_image, staff_lines)
+    cv2.imwrite(f'{base_dir}/03_image_without_lines_result.png', image_without_lines)
+
+    processed_image = image_preprocessing.morphological_processing(image_without_lines, ((max_thickness+1),(max_thickness+1)))
+    cv2.imwrite(f'{base_dir}/04_processed_image.png', processed_image)
+
+    sizes = note_recognition.size_filtering(staff_lines_v2)
+    print(f"\nSizes: {sizes}")
+
+    staff_images, staff_boundaries = note_recognition.divide_staff_v2(processed_image, staff_lines_v2, sizes[2])
+    print(f"\nStaff boundaries: {staff_boundaries}")
+
+    num_labels, labels, stats, _ = image_preprocessing.connected_component_labeling(processed_image)
+    cv2.imwrite(f'{base_dir}/05_labeled_image.png', labels)
+
+    labels, bounding_boxes = accidental_and_rest_recognition.element_recognition(num_labels, labels, stats, True)
+    cv2.imwrite(f'{base_dir}/06_image_with_only_notes.png', labels)
+
+    stem_lines, centers = note_recognition.stem_filtering_and_notes_positions(labels, bounding_boxes)
+    cv2.imwrite(f'{base_dir}/07_note_heads.png', stem_lines)
+    print(f"\nNote head centers: {centers}")
+
+    pitchs_v1 = note_recognition.pitch_analysis_v1(centers, staff_lines_v1)
+    print(f"\nPitchs (v1): {pitchs_v1}")
+
+    pitchs_v2 = note_recognition.pitch_analysis_v2(centers, staff_lines_v2)
+    print(f"\nPitchs (v2): {pitchs_v2}")
+
+    detected_notes_v1 = accidental_and_rest_recognition.detect_accidentals(centers, pitchs_v1)
+    detected_notes_v2 = accidental_and_rest_recognition.detect_accidentals(centers, pitchs_v2)
+
+    result_v1 = note_recognition.draw_detected_notes_v1(binary_image, detected_notes_v1, staff_lines_v1)
+    result_v2 = note_recognition.draw_detected_notes_v2(binary_image, detected_notes_v2, staff_lines_v2)
+
+    cv2.imwrite(f'{base_dir}/08_detected_notes_v1.png', result_v1)
+    cv2.imwrite(f'{base_dir}/09_detected_notes_v2.png', result_v2)
+
+
+
+
+
+def delete_testing_folders():
+    folder = 'testing'
+    if os.path.exists(folder):
+        shutil.rmtree(folder)
+        print("Carpetas de pruebas eliminadas")
+    else:
+        print("No hay carpetas de pruebas para eliminar")
+
+
 if __name__ == '__main__':
-    test_project('images\Test Sheet 8.png')
-    test_note_recognition_v1_in_isolation()
-    test_note_recognition_v2_in_isolation()
+    
+    tested_sheets = []
+    for i in range(1,12):
+        tested_sheets.append('images/Test Sheet ' + str(i) + '.png')
+    
+    delete_testing_folders()
+    
+    # Comentar esta linea para limpiar la carpeta de tests
+    test_project_refactored(tested_sheets)
+
+
