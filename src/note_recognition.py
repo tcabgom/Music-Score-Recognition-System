@@ -323,7 +323,7 @@ def pitch_analysis_v1(note_head_positions, staff_lines_positions):
         
 
         # Añade las posiciones de las notas por encima de la partitura
-        for i in range(1,5):
+        for i in range(1,6):
             potential_positions.append(staff_lines_positions[note_staff][0] - staff_lines_distance * i*0.5)
 
         # Busca la posición más cercana a la nota seleccionando el indice del valor mas cercano
@@ -425,7 +425,6 @@ def draw_detected_notes_v1(sheet, detected_notes, staff_lines):
 
 def draw_detected_notes_v2(sheet, detected_notes, staff_lines):
     draw_note_y = [staff[0]+staff[1]*7 for staff in staff_lines]
-    print(draw_note_y)
     font = cv2.FONT_HERSHEY_SIMPLEX
     scale = 0.75
     color = (0, 0, 255)
