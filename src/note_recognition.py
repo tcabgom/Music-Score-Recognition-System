@@ -26,6 +26,15 @@ notes_mapping = {
 }
 
 
+BEAT_MAPPING = {
+    0: "1",  # Semicorchea
+    1: "2",  # Corchea
+    3: "4",  # Negra
+    4: "8",  # Blanca
+    5: "16", # Redonda
+}
+
+
 
 def size_filtering(staff_lines):
     staff_distance = []
