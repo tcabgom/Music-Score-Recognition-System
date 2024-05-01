@@ -7,22 +7,22 @@ from math import floor
 
 
 notes_mapping = {
-    0: "C",  # Do bajo
-    1: "D",  # Re bajo
-    2: "E",  # Mi bajo
-    3: "F",  # Fa bajo
-    4: "G",  # Sol bajo
-    5: "A",  # La bajo
-    6: "B",  # Si bajo
-    7: "^C",  # Do alto
-    8: "^D",  # Re alto
-    9: "^E",  # Mi alto
-    10: "^F",  # Fa alto
-    11: "^G",  # Sol alto
-    12: "^A",  # La alto
-    13: "^B",  # Si alto
-    14: "^^C",  # Do muy alto
-    15: "^^D",  # Re muy alto
+    0: "C3",  # Do bajo
+    1: "D3",  # Re bajo
+    2: "E3",  # Mi bajo
+    3: "F3",  # Fa bajo
+    4: "G3",  # Sol bajo
+    5: "A3",  # La bajo
+    6: "B3",  # Si bajo
+    7: "C4",  # Do alto
+    8: "D4",  # Re alto
+    9: "E4",  # Mi alto
+    10: "F4",  # Fa alto
+    11: "G4",  # Sol alto
+    12: "A4",  # La alto
+    13: "B4",  # Si alto
+    14: "C5",  # Do muy alto
+    15: "D5",  # Re muy alto
 }
 
 
