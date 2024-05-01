@@ -14,15 +14,15 @@ notes_mapping = {
     4: "G",  # Sol bajo
     5: "A",  # La bajo
     6: "B",  # Si bajo
-    7: "^C",  # Do alto
-    8: "^D",  # Re alto
-    9: "^E",  # Mi alto
-    10: "^F",  # Fa alto
-    11: "^G",  # Sol alto
-    12: "^A",  # La alto
-    13: "^B",  # Si alto
-    14: "^^C",  # Do muy alto
-    15: "^^D",  # Re muy alto
+    7: "'C",  # Do alto
+    8: "'D",  # Re alto
+    9: "'E",  # Mi alto
+    10: "'F",  # Fa alto
+    11: "'G",  # Sol alto
+    12: "'A",  # La alto
+    13: "'B",  # Si alto
+    14: "''C",  # Do muy alto
+    15: "''D",  # Re muy alto
 }
 
 
