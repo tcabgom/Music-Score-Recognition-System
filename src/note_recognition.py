@@ -1,6 +1,7 @@
 import cv2
 import numpy as np
 import matplotlib as plt
+from accidental_and_rest_recognition import FIGURES_POSITIONS
 from image_preprocessing import connected_component_labeling
 from stuff_region_segmentation import get_histogram_image
 from math import floor
@@ -23,6 +24,15 @@ notes_mapping = {
     13: "B4",  # Si alto
     14: "C5",  # Do muy alto
     15: "D5",  # Re muy alto
+}
+
+
+BEAT_MAPPING = {
+    0: "1",  # Semicorchea
+    1: "2",  # Corchea
+    3: "4",  # Negra
+    4: "8",  # Blanca
+    5: "16", # Redonda
 }
 
 
@@ -195,6 +205,7 @@ def aspect_ratio_condition(bbox, threshold = 1.4):
 def remove_components_and_find_notes(image, bounding_boxes, clean_image=False):
     areas = []
     centers = []
+    fulls = []
     bounding_boxes_aux = []
     for bbox in bounding_boxes:
         x, y, w, h = bbox
@@ -222,7 +233,15 @@ def remove_components_and_find_notes(image, bounding_boxes, clean_image=False):
                 y_center = y + h // 2
                 centers.append((x_center, y_center))
     
-    return image, centers
+    if FIGURES_POSITIONS[6]:
+        
+        for bbox in FIGURES_POSITIONS[6]:
+            x, y, w, h = bbox
+            x_center = x + w // 2
+            y_center = y + h // 2
+            fulls.append((x_center, y_center))
+    
+    return image, centers, fulls
 
 def stem_filtering_and_notes_positions(image, bounding_boxes, clean_image=False):
 
@@ -230,8 +249,8 @@ def stem_filtering_and_notes_positions(image, bounding_boxes, clean_image=False)
     bounding_boxes = extract_bounding_boxes(image)
 
     # Eliminar componentes conexas que no cumplen con la condición
-    final_image, centers = remove_components_and_find_notes(image, bounding_boxes, clean_image)
-    return final_image, centers
+    final_image, centers, fulls = remove_components_and_find_notes(image, bounding_boxes, clean_image)
+    return final_image, centers, fulls
 
 # En el paper se llama size filtering
 def head_filtering_v1(image, head_size, staffs_positions):
