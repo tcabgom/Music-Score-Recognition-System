@@ -7,22 +7,22 @@ from math import floor
 
 
 notes_mapping = {
-    0: "C3",  # Do bajo
-    1: "D3",  # Re bajo
-    2: "E3",  # Mi bajo
-    3: "F3",  # Fa bajo
-    4: "G3",  # Sol bajo
-    5: "A3",  # La bajo
-    6: "B3",  # Si bajo
-    7: "C4",  # Do alto
-    8: "D4",  # Re alto
-    9: "E4",  # Mi alto
-    10: "F4",  # Fa alto
-    11: "G4",  # Sol alto
-    12: "A4",  # La alto
-    13: "B4",  # Si alto
-    14: "C5",  # Do muy alto
-    15: "D5",  # Re muy alto
+    0: "C4",  # Do bajo
+    1: "D4",  # Re bajo
+    2: "E4",  # Mi bajo
+    3: "F4",  # Fa bajo
+    4: "G4",  # Sol bajo
+    5: "A4",  # La bajo
+    6: "B4",  # Si bajo
+    7: "C5",  # Do alto
+    8: "D5",  # Re alto
+    9: "E5",  # Mi alto
+    10: "F5",  # Fa alto
+    11: "G5",  # Sol alto
+    12: "A5",  # La alto
+    13: "B5",  # Si alto
+    14: "C6",  # Do muy alto
+    15: "D6",  # Re muy alto
 }
 
 
@@ -394,8 +394,32 @@ def pitch_analysis_v2(note_head_positions, staff_lines_positions):
     return notes_pitch
 
 
-def beat_analysis(image):
-    pass
+def beat_analysis(processed_image, centers, detected_notes, bounding_boxes=None):
+    ROUNDNESS_PROPORTION_THRESHOLD=0.9
+    if bounding_boxes is None:
+        bounding_boxes = extract_bounding_boxes(processed_image)
+    for center in centers:
+        for bbox in bounding_boxes:
+            x, y, w, h = bbox
+            #Si el centro está en la bounding box
+            if center[0] in range(x, x + w) and center[1] in range(y, y + h):
+                bbox_image = processed_image[y:y+h, x:x+w]
+                filtered_bbox_image = stem_filtering([bbox_image])[0]
+                #Por cada componente dentro de la bounding box analizamos sus proporciones y contamos rectángulos
+                num_of_rectangles = 0
+                num_labels, _, stats, _ = connected_component_labeling(filtered_bbox_image)
+                for label_index in range(0, num_labels):
+                    x, y, w, h, _ = stats[label_index]
+                    if min(w,h)/max(w,h) < ROUNDNESS_PROPORTION_THRESHOLD: #Comprobamos si tiene proporciones de rectángulo
+                        num_of_rectangles += 1
+                note = detected_notes[center]
+                if num_of_rectangles >= 1:
+                    detected_notes[center] = note + ":" + str(num_of_rectangles)
+    image = stem_filtering_on_bounding_boxes(processed_image, bounding_boxes)
+    new_bounding_boxes = extract_bounding_boxes(image)
+    print(new_bounding_boxes)
+
+    return image
 
 
 def draw_detected_notes_v1(sheet, detected_notes, staff_lines):
