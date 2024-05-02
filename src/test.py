@@ -68,8 +68,12 @@ def test_sheet(image_path, base_dir):
     labels, bounding_boxes = accidental_and_rest_recognition.element_recognition(num_labels, labels, stats, True, is_executed_on_notebook)
     cv2.imwrite(f'{base_dir}/06_image_with_only_notes.png', labels)
 
+    print(f"Detected elements: {accidental_and_rest_recognition.FIGURES_POSITIONS}")
+
     stem_lines, centers, fulls = note_recognition.stem_filtering_and_notes_positions(labels, bounding_boxes)
     cv2.imwrite(f'{base_dir}/07_note_heads.png', stem_lines)
+    for i in range(6,9):
+        centers = note_recognition.add_fulls_to_detected_notes(accidental_and_rest_recognition.FIGURES_POSITIONS[i], centers)
     print(f"\nNote head centers: {centers}")
 
     cv2.imwrite(f'{base_dir}/08_note_heads_and_staff_lines.png', cv2.bitwise_and(stem_lines, staff_lines))
@@ -96,6 +100,12 @@ def test_sheet(image_path, base_dir):
     cv2.imwrite(f'{base_dir}/09_detected_notes_result_v1.png', result_v1)
     cv2.imwrite(f'{base_dir}/10_detected_notes_result_v2.png', result_v2)
 
+    # Se vuelve a definir para que no se mantenga entre ejecuciones
+    accidental_and_rest_recognition.FIGURES_POSITIONS = list()
+    for _ in range(9):
+        accidental_and_rest_recognition.FIGURES_POSITIONS.append(list())
+
+
 def delete_testing_folders():
     folder = 'testing'
     if os.path.exists(folder):
@@ -108,7 +118,7 @@ def delete_testing_folders():
 if __name__ == '__main__':
     
     tested_sheets = []
-    for i in range(1,12):
+    for i in range(1,13):
         tested_sheets.append('images/Test Sheet ' + str(i) + '.png')
     
     is_executed_on_notebook = False # La ruta a los templates es diferente si se ejecuta desde un notebook

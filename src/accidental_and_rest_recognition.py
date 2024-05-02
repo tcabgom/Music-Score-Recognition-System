@@ -3,12 +3,12 @@
 import cv2
 import numpy as np
 
-TEMPLATES = ["Sharp.png", "Flat.png", "Natural.png", "Quarter_Rest.png", "Eighth_Rest.png", "Sixteenth_Rest.png", "Treble_Clef.png", "Compass_Number.png", "Full.png"]
-TEMPLATE_THRESHOLD = 0.8
+TEMPLATES = ["Sharp.png", "Flat.png", "Natural.png", "Quarter_Rest.png", "Eighth_Rest.png", "Sixteenth_Rest.png", "Full_0.png", "Full_1.png", "Full_2.png", "Treble_Clef.png", "Compass_Number.png"]
+TEMPLATE_THRESHOLD = 0.75
 ACCIDENTAL_MAPPING = {1: "#", 2: "b", 3:"-"}
 
 FIGURES_POSITIONS = list()
-for i in range(6):
+for _ in range(9):
     FIGURES_POSITIONS.append(list())
 
 
@@ -28,6 +28,7 @@ def template_matching(binary_image, template):
 
 
 def element_recognition(num_labels, labels, stats, returns_binary=False, is_executed_in_notebook=False):
+
     bounding_boxes = []
     
     for i in range(1, num_labels):
@@ -65,11 +66,8 @@ def element_recognition(num_labels, labels, stats, returns_binary=False, is_exec
                 new_x = x + int((w - bounding_box.shape[1]) / 2)
                 new_y = y + int((h - bounding_box.shape[0]) / 2)
                 # Borrar el elemento de la imagen original
-                if j != 8:
-                    labels[new_y:new_y+bounding_box.shape[0], new_x:new_x+bounding_box.shape[1]][bounding_box != 0] = 0
-                else:
-                    labels[new_y:new_y+bounding_box.shape[0], new_x:new_x+bounding_box.shape[1]] = 255
-                if j < 6:
+                labels[new_y:new_y+bounding_box.shape[0], new_x:new_x+bounding_box.shape[1]][bounding_box != 0] = 0
+                if j < 9:
                     FIGURES_POSITIONS[j].append((new_x, new_y, w, h))
 
                 break  # Salir del bucle una vez que se encuentra una coincidencia
