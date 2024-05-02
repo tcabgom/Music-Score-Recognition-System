@@ -210,7 +210,6 @@ def aspect_ratio_condition_vertical(bbox, threshold = 1.8):
 def remove_components_and_find_notes(image, bounding_boxes, clean_image=False):
     areas = []
     centers = []
-    fulls = []
     bounding_boxes_aux = []
     for bbox in bounding_boxes:
         x, y, w, h = bbox
@@ -255,16 +254,8 @@ def remove_components_and_find_notes(image, bounding_boxes, clean_image=False):
                 x_center = x + w // 2
                 y_center = y + h // 2
                 centers.append((x_center, y_center))
-    '''
-    if FIGURES_POSITIONS[6]:
-        
-        for bbox in FIGURES_POSITIONS[6]:
-            x, y, w, h = bbox
-            x_center = x + w // 2
-            y_center = y + h // 2
-            fulls.append((x_center, y_center))
-    '''
-    return image, centers, fulls
+
+    return image, centers
 
 def stem_filtering_and_notes_positions(image, bounding_boxes, clean_image=False):
 
