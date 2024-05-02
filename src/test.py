@@ -63,6 +63,7 @@ def test_sheet(image_path, base_dir):
 
     num_labels, labels, stats, _ = image_preprocessing.connected_component_labeling(processed_image)
     cv2.imwrite(f'{base_dir}/05_labeled_image.png', labels)
+    print(f"\nNumber of labels: {num_labels}")
 
     labels, bounding_boxes = accidental_and_rest_recognition.element_recognition(num_labels, labels, stats, True, is_executed_on_notebook)
     cv2.imwrite(f'{base_dir}/06_image_with_only_notes.png', labels)
