@@ -195,9 +195,14 @@ def stem_filtering_on_bounding_boxes(image, bounding_boxes=None):
     return combined_filtered_image
 
 # Condición para filtrar bounding boxes basada en el ancho más del doble de la altura
-def aspect_ratio_condition(bbox, threshold = 1.4):
+def aspect_ratio_condition_horizontal(bbox, threshold = 1.4):
     x, y, w, h = bbox
     aspect_ratio = w / h
+    return aspect_ratio >= threshold
+
+def aspect_ratio_condition_vertical(bbox, threshold = 1.8):
+    x, y, w, h = bbox
+    aspect_ratio = h / w
     return aspect_ratio >= threshold
 
 
@@ -210,8 +215,10 @@ def remove_components_and_find_notes(image, bounding_boxes, clean_image=False):
     for bbox in bounding_boxes:
         x, y, w, h = bbox
 
-        if aspect_ratio_condition(bbox):
+        if aspect_ratio_condition_horizontal(bbox):
             image[y:y+h, x:x+w] = 255  # Rellenar con blanco la región de la bounding box
+        elif aspect_ratio_condition_vertical(bbox, 1.8):
+            image[y:y+h, x:x+w] = 255
         else:
             if not clean_image:
                 image[y:y+h, x:x+w] = 0
