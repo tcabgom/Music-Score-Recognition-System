@@ -229,13 +229,29 @@ def remove_components_and_find_notes(image, bounding_boxes, clean_image=False):
     
     if areas:
         mean_area = sum(areas) / len(areas)
-        
+        areas2 = []
+        bounding_boxes_aux2 = []
         # Eliminar bounding boxes con área menor a la mitad de la media
         for i, bbox in enumerate(bounding_boxes_aux):
             x, y, w, h = bbox
             if areas[i] < mean_area / 2:
                 image[y:y+h, x:x+w] = 255
+            if areas[i] > mean_area * 1.6 and aspect_ratio_condition_horizontal(bbox, 1.25):
+                image[y:y+h, x:x+w] = 255
             else:
+                area = w * h
+                areas2.append(area)
+                bounding_boxes_aux2.append(bbox)
+
+        
+        mean_area = sum(areas2) / len(areas2)
+        for i, bbox in enumerate(bounding_boxes_aux2):
+            x, y, w, h = bbox
+            if areas2[i] < mean_area / 1.6:
+                image[y:y+h, x:x+w] = 255
+            else:
+                if not clean_image:
+                    image[y:y+h, x:x+w] = 0
                 x_center = x + w // 2
                 y_center = y + h // 2
                 centers.append((x_center, y_center))
