@@ -2,7 +2,7 @@ import cv2
 import numpy as np
 import matplotlib as plt
 from accidental_and_rest_recognition import FIGURES_POSITIONS
-from image_preprocessing import connected_component_labeling
+from image_preprocessing import connected_component_labeling, morphological_processing
 from stuff_region_segmentation import get_histogram_image
 from math import floor
 
@@ -255,7 +255,7 @@ def remove_components_and_find_notes(image, bounding_boxes, clean_image=False):
                 y_center = y + h // 2
                 centers.append((x_center, y_center))
 
-    return image, centers
+    return image, centers, 0
 
 def stem_filtering_and_notes_positions(image, bounding_boxes, clean_image=False):
 
@@ -423,33 +423,37 @@ def pitch_analysis_v2(note_head_positions, staff_lines_positions):
 
     return notes_pitch
 
-
-def beat_analysis(processed_image, centers, detected_notes, bounding_boxes=None):
-    ROUNDNESS_PROPORTION_THRESHOLD=0.9
+#SIN TERMINAR (WIP)
+def beat_analysis(processed_image, detected_notes, bounding_boxes=None):
+    ROUNDNESS_PROPORTION_THRESHOLD=0.7 #Si las proporciones son menores, se considera rectángulo (1 sería cuadrado)
+    detected_notes = detected_notes.copy()
+    bbox_images_by_center = {}
     if bounding_boxes is None:
         bounding_boxes = extract_bounding_boxes(processed_image)
-    for center in centers:
+    for center in detected_notes.keys(): #detected_notes es un diccionario de la forma {centro:nota}
         for bbox in bounding_boxes:
             x, y, w, h = bbox
             #Si el centro está en la bounding box
             if center[0] in range(x, x + w) and center[1] in range(y, y + h):
                 bbox_image = processed_image[y:y+h, x:x+w]
                 filtered_bbox_image = stem_filtering([bbox_image])[0]
+                #Hacemos una operación morfológica vertical (7x4) para cerrar bien el proceso de stem_filtering
+                kernel = np.ones((7,4), np.uint8)                           
+                dilated_image = cv2.erode(filtered_bbox_image, kernel, iterations=1)     
+                filtered_bbox_image = cv2.dilate(dilated_image, kernel, iterations=1)
+                bbox_images_by_center[center]=filtered_bbox_image
                 #Por cada componente dentro de la bounding box analizamos sus proporciones y contamos rectángulos
                 num_of_rectangles = 0
                 num_labels, _, stats, _ = connected_component_labeling(filtered_bbox_image)
-                for label_index in range(0, num_labels):
-                    x, y, w, h, _ = stats[label_index]
-                    if min(w,h)/max(w,h) < ROUNDNESS_PROPORTION_THRESHOLD: #Comprobamos si tiene proporciones de rectángulo
+                for label_index in range(1, num_labels): #El rango es (1,N) para no contar el fondo
+                    _, _, width, height, _ = stats[label_index]
+                    if min(width,height)/max(width,height) < ROUNDNESS_PROPORTION_THRESHOLD: #Comprobamos si tiene proporciones de rectángulo
                         num_of_rectangles += 1
                 note = detected_notes[center]
-                if num_of_rectangles >= 1:
+                if len(note) <= 2:
                     detected_notes[center] = note + ":" + str(num_of_rectangles)
-    image = stem_filtering_on_bounding_boxes(processed_image, bounding_boxes)
-    new_bounding_boxes = extract_bounding_boxes(image)
-    print(new_bounding_boxes)
 
-    return image
+    return bounding_boxes, bbox_images_by_center, detected_notes
 
 
 def draw_detected_notes_v1(sheet, detected_notes, staff_lines):
