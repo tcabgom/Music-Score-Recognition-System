@@ -3,12 +3,12 @@
 import cv2
 import numpy as np
 
-TEMPLATES = ["Sharp.png", "Flat.png", "Natural.png", "Quarter_Rest.png", "Eighth_Rest.png", "Sixteenth_Rest.png", "Full.png", "Treble_Clef.png", "Compass_Number.png"]
+TEMPLATES = ["Sharp.png", "Flat.png", "Natural.png", "Quarter_Rest.png", "Eighth_Rest.png", "Sixteenth_Rest.png", "Full_0.png", "Full_1.png", "Full_2.png", "Treble_Clef.png", "Compass_Number.png"]
 TEMPLATE_THRESHOLD = 0.8
 ACCIDENTAL_MAPPING = {1: "#", 2: "b", 3:"-"}
 
 FIGURES_POSITIONS = list()
-for _ in range(7):
+for _ in range(9):
     FIGURES_POSITIONS.append(list())
 
 
@@ -66,11 +66,7 @@ def element_recognition(num_labels, labels, stats, returns_binary=False, is_exec
                 new_x = x + int((w - bounding_box.shape[1]) / 2)
                 new_y = y + int((h - bounding_box.shape[0]) / 2)
                 # Borrar el elemento de la imagen original
-                if j != 6:
-                    labels[new_y:new_y+bounding_box.shape[0], new_x:new_x+bounding_box.shape[1]][bounding_box != 0] = 0
-                else:
-                    labels[new_y:new_y+bounding_box.shape[0], new_x:new_x+bounding_box.shape[1]] = 0
-                if j < 7:
+                if j < 9:
                     FIGURES_POSITIONS[j].append((new_x, new_y, w, h))
 
                 break  # Salir del bucle una vez que se encuentra una coincidencia
