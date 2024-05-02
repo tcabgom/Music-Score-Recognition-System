@@ -118,7 +118,7 @@ def delete_testing_folders():
 if __name__ == '__main__':
     
     tested_sheets = []
-    for i in range(1,12):
+    for i in range(1,13):
         tested_sheets.append('images/Test Sheet ' + str(i) + '.png')
     
     is_executed_on_notebook = False # La ruta a los templates es diferente si se ejecuta desde un notebook
