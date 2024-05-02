@@ -67,7 +67,7 @@ def test_sheet(image_path, base_dir):
     labels, bounding_boxes = accidental_and_rest_recognition.element_recognition(num_labels, labels, stats, True)
     cv2.imwrite(f'{base_dir}/06_image_with_only_notes.png', labels)
 
-    stem_lines, centers = note_recognition.stem_filtering_and_notes_positions(labels, bounding_boxes)
+    stem_lines, centers, fulls = note_recognition.stem_filtering_and_notes_positions(labels, bounding_boxes)
     cv2.imwrite(f'{base_dir}/07_note_heads.png', stem_lines)
     print(f"\nNote head centers: {centers}")
 
