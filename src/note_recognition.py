@@ -232,7 +232,7 @@ def remove_components_and_find_notes(image, bounding_boxes, clean_image=False):
                 x_center = x + w // 2
                 y_center = y + h // 2
                 centers.append((x_center, y_center))
-    
+    '''
     if FIGURES_POSITIONS[6]:
         
         for bbox in FIGURES_POSITIONS[6]:
@@ -240,7 +240,7 @@ def remove_components_and_find_notes(image, bounding_boxes, clean_image=False):
             x_center = x + w // 2
             y_center = y + h // 2
             fulls.append((x_center, y_center))
-    
+    '''
     return image, centers, fulls
 
 def stem_filtering_and_notes_positions(image, bounding_boxes, clean_image=False):

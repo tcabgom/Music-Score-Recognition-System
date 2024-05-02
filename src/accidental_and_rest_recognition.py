@@ -27,7 +27,7 @@ def template_matching(binary_image, template):
     return normalized_result
 
 
-def element_recognition(num_labels, labels, stats, returns_binary=False):
+def element_recognition(num_labels, labels, stats, returns_binary=False, is_executed_in_notebook=False):
     bounding_boxes = []
     
     for i in range(1, num_labels):
@@ -40,7 +40,10 @@ def element_recognition(num_labels, labels, stats, returns_binary=False):
         found = False
         for j in range(len(TEMPLATES)):
             template = TEMPLATES[j]
-            template_image = cv2.imread(f'../templates/{template}', cv2.IMREAD_GRAYSCALE)
+            if is_executed_in_notebook:
+                template_image = cv2.imread(f'../templates/{template}', cv2.IMREAD_GRAYSCALE)
+            else:
+                template_image = cv2.imread(f'templates/{template}', cv2.IMREAD_GRAYSCALE)
 
             # Calculate the scaling factor for resizing the bounding box
             scale_factorY = template_image.shape[0] / bounding_box.shape[0]

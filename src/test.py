@@ -8,7 +8,7 @@ import note_recognition
 import accidental_and_rest_recognition
 
 
-def test_project(tested_sheets):
+def test_project(tested_sheets, is_executed_on_notebook):
     for sheet in tested_sheets:
         # Extraer el nombre del archivo sin extensión
         sheet_name = os.path.splitext(os.path.basename(sheet))[0]
@@ -64,7 +64,7 @@ def test_sheet(image_path, base_dir):
     num_labels, labels, stats, _ = image_preprocessing.connected_component_labeling(processed_image)
     cv2.imwrite(f'{base_dir}/05_labeled_image.png', labels)
 
-    labels, bounding_boxes = accidental_and_rest_recognition.element_recognition(num_labels, labels, stats, True)
+    labels, bounding_boxes = accidental_and_rest_recognition.element_recognition(num_labels, labels, stats, True, is_executed_on_notebook)
     cv2.imwrite(f'{base_dir}/06_image_with_only_notes.png', labels)
 
     stem_lines, centers, fulls = note_recognition.stem_filtering_and_notes_positions(labels, bounding_boxes)
@@ -110,9 +110,10 @@ if __name__ == '__main__':
     for i in range(1,12):
         tested_sheets.append('images/Test Sheet ' + str(i) + '.png')
     
+    is_executed_on_notebook = False # La ruta a los templates es diferente si se ejecuta desde un notebook
     delete_testing_folders()
     
     # Comentar esta linea para limpiar la carpeta de tests
-    test_project(tested_sheets)
+    test_project(tested_sheets, is_executed_on_notebook)
 
 
