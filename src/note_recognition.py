@@ -1,6 +1,7 @@
 import cv2
 import numpy as np
 import matplotlib as plt
+from accidental_and_rest_recognition import FIGURES_POSITIONS
 from image_preprocessing import connected_component_labeling
 from stuff_region_segmentation import get_histogram_image
 from math import floor
@@ -194,9 +195,14 @@ def stem_filtering_on_bounding_boxes(image, bounding_boxes=None):
     return combined_filtered_image
 
 # Condición para filtrar bounding boxes basada en el ancho más del doble de la altura
-def aspect_ratio_condition(bbox, threshold = 1.4):
+def aspect_ratio_condition_horizontal(bbox, threshold = 1.4):
     x, y, w, h = bbox
     aspect_ratio = w / h
+    return aspect_ratio >= threshold
+
+def aspect_ratio_condition_vertical(bbox, threshold = 1.8):
+    x, y, w, h = bbox
+    aspect_ratio = h / w
     return aspect_ratio >= threshold
 
 
@@ -208,8 +214,10 @@ def remove_components_and_find_notes(image, bounding_boxes, clean_image=False):
     for bbox in bounding_boxes:
         x, y, w, h = bbox
 
-        if aspect_ratio_condition(bbox):
+        if aspect_ratio_condition_horizontal(bbox):
             image[y:y+h, x:x+w] = 255  # Rellenar con blanco la región de la bounding box
+        elif aspect_ratio_condition_vertical(bbox, 1.8):
+            image[y:y+h, x:x+w] = 255
         else:
             if not clean_image:
                 image[y:y+h, x:x+w] = 0
@@ -220,17 +228,33 @@ def remove_components_and_find_notes(image, bounding_boxes, clean_image=False):
     
     if areas:
         mean_area = sum(areas) / len(areas)
-        
+        areas2 = []
+        bounding_boxes_aux2 = []
         # Eliminar bounding boxes con área menor a la mitad de la media
         for i, bbox in enumerate(bounding_boxes_aux):
             x, y, w, h = bbox
             if areas[i] < mean_area / 2:
                 image[y:y+h, x:x+w] = 255
+            if areas[i] > mean_area * 1.6 and aspect_ratio_condition_horizontal(bbox, 1.17):
+                image[y:y+h, x:x+w] = 255
             else:
+                area = w * h
+                areas2.append(area)
+                bounding_boxes_aux2.append(bbox)
+
+        
+        mean_area = sum(areas2) / len(areas2)
+        for i, bbox in enumerate(bounding_boxes_aux2):
+            x, y, w, h = bbox
+            if areas2[i] < mean_area / 1.6:
+                image[y:y+h, x:x+w] = 255
+            else:
+                if not clean_image:
+                    image[y:y+h, x:x+w] = 0
                 x_center = x + w // 2
                 y_center = y + h // 2
                 centers.append((x_center, y_center))
-    
+
     return image, centers
 
 def stem_filtering_and_notes_positions(image, bounding_boxes, clean_image=False):
@@ -239,8 +263,8 @@ def stem_filtering_and_notes_positions(image, bounding_boxes, clean_image=False)
     bounding_boxes = extract_bounding_boxes(image)
 
     # Eliminar componentes conexas que no cumplen con la condición
-    final_image, centers = remove_components_and_find_notes(image, bounding_boxes, clean_image)
-    return final_image, centers
+    final_image, centers, fulls = remove_components_and_find_notes(image, bounding_boxes, clean_image)
+    return final_image, centers, fulls
 
 # En el paper se llama size filtering
 def head_filtering_v1(image, head_size, staffs_positions):
@@ -295,6 +319,12 @@ def shape_filtering(note_head_size, binary_image):
             note_head_centers.append(center)
 
     return note_head_centers
+
+
+def add_fulls_to_detected_notes(fulls, note_head_positions):
+    for full in fulls:
+        note_head_positions.append((round(full[0]+full[2]*0.5),round(full[1]+full[3]*0.5)))
+    return note_head_positions
 
 
 def pitch_analysis_v1(note_head_positions, staff_lines_positions):
