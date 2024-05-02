@@ -236,7 +236,7 @@ def remove_components_and_find_notes(image, bounding_boxes, clean_image=False):
             x, y, w, h = bbox
             if areas[i] < mean_area / 2:
                 image[y:y+h, x:x+w] = 255
-            if areas[i] > mean_area * 1.6 and aspect_ratio_condition_horizontal(bbox, 1.25):
+            if areas[i] > mean_area * 1.6 and aspect_ratio_condition_horizontal(bbox, 1.17):
                 image[y:y+h, x:x+w] = 255
             else:
                 area = w * h
