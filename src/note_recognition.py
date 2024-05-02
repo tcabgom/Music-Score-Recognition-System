@@ -307,6 +307,12 @@ def shape_filtering(note_head_size, binary_image):
     return note_head_centers
 
 
+def add_fulls_to_detected_notes(fulls, note_head_positions):
+    for full in fulls:
+        note_head_positions.append((round(full[0]+full[2]*0.5),round(full[1]+full[3]*0.5)))
+    return note_head_positions
+
+
 def pitch_analysis_v1(note_head_positions, staff_lines_positions):
     '''
     
