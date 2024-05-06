@@ -70,7 +70,7 @@ def test_sheet(image_path, base_dir):
 
     print(f"Detected elements: {accidental_and_rest_recognition.FIGURES_POSITIONS}")
 
-    stem_lines, centers = note_recognition.stem_filtering_and_notes_positions(labels, bounding_boxes)
+    stem_lines, centers = note_recognition.stem_filtering_and_notes_positions(labels, bounding_boxes, staff_lines_v2, True)
     cv2.imwrite(f'{base_dir}/07_note_heads.png', stem_lines)
     for i in range(6,9):
         centers = note_recognition.add_fulls_to_detected_notes(accidental_and_rest_recognition.FIGURES_POSITIONS[i], centers)
@@ -92,7 +92,7 @@ def test_sheet(image_path, base_dir):
         if key in detected_notes_v2 and detected_notes_v1[key] != detected_notes_v2[key]:
             different_keys.append(key)
     print(f"\nDifferent keys in both methods: {different_keys}")
-    print(f"Difference percentage: {len(different_keys) / len(detected_notes_v1) * 100:.2f}%")
+    #print(f"Difference percentage: {len(different_keys) / len(detected_notes_v1) * 100:.2f}%")
 
     result_v1 = note_recognition.draw_detected_notes_v1(binary_image, detected_notes_v1, staff_lines_v1)
     result_v2 = note_recognition.draw_detected_notes_v2(binary_image, detected_notes_v2, staff_lines_v2)
