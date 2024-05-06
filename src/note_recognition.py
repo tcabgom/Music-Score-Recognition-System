@@ -425,9 +425,9 @@ def pitch_analysis_v2(note_head_positions, staff_lines_positions):
 
 #SIN TERMINAR (WIP)
 def beat_analysis(processed_image, detected_notes, bounding_boxes=None):
-    ROUNDNESS_PROPORTION_THRESHOLD=0.7 #Si las proporciones son menores, se considera rectángulo (1 sería cuadrado)
     detected_notes = detected_notes.copy()
-    bbox_images_by_center = {}
+    bbox_images_by_center = {} #Diccionario centro:imagen_bbox para visualizar cada nota por separado
+    size_threshold = None #Necesitamos un límite de tamaño para no contar el ruido existente en las imágenes
     if bounding_boxes is None:
         bounding_boxes = extract_bounding_boxes(processed_image)
     for center in detected_notes.keys(): #detected_notes es un diccionario de la forma {centro:nota}
@@ -443,18 +443,34 @@ def beat_analysis(processed_image, detected_notes, bounding_boxes=None):
                 filtered_bbox_image = cv2.dilate(dilated_image, kernel, iterations=1)
                 bbox_images_by_center[center]=filtered_bbox_image
                 #Por cada componente dentro de la bounding box analizamos sus proporciones y contamos rectángulos
-                num_of_rectangles = 0
-                num_labels, _, stats, _ = connected_component_labeling(filtered_bbox_image)
-                for label_index in range(1, num_labels): #El rango es (1,N) para no contar el fondo
-                    _, _, width, height, _ = stats[label_index]
-                    if min(width,height)/max(width,height) < ROUNDNESS_PROPORTION_THRESHOLD: #Comprobamos si tiene proporciones de rectángulo
-                        num_of_rectangles += 1
+                size_threshold = getSizeThreshold(filtered_bbox_image) if size_threshold is None else size_threshold 
+                num_of_rectangles = countRectangles(filtered_bbox_image, size_threshold) #Los rectángulos no son cabezas de notas
                 note = detected_notes[center]
-                if len(note) <= 2:
+                if ":" not in note:
                     detected_notes[center] = note + ":" + str(num_of_rectangles)
 
     return bounding_boxes, bbox_images_by_center, detected_notes
 
+def countRectangles(filtered_bbox_image, size_threshold=10):
+    ROUNDNESS_PROPORTION_THRESHOLD=0.7 #Si las proporciones son menores, se considera rectángulo (1 sería cuadrado)
+    SIZE_THRESHOLD=size_threshold
+    num_of_rectangles = 0
+    num_labels, _, stats, _ = connected_component_labeling(filtered_bbox_image)
+    for label_index in range(1, num_labels): #El rango es (1,N) para no contar el fondo
+        _, _, width, height, _ = stats[label_index]
+        if min(width,height)/max(width,height) < ROUNDNESS_PROPORTION_THRESHOLD: #Comprobamos si tiene proporciones de rectángulo
+            if width*height > SIZE_THRESHOLD:
+                num_of_rectangles += 1
+    return num_of_rectangles
+
+def getSizeThreshold(filtered_bbox_image):
+    size_sum = 0
+    num_labels, _, stats, _ = connected_component_labeling(filtered_bbox_image)
+    for label_index in range(1, num_labels): #El rango es (1,N) para no contar el fondo
+        _, _, width, height, _ = stats[label_index]
+        size_sum += width*height
+    average_size = size_sum / (num_labels-1)
+    return average_size / 2
 
 def draw_detected_notes_v1(sheet, detected_notes, staff_lines):
     draw_note_y = [line[4] + (line[4] - line[3]) * 3 for line in staff_lines]
