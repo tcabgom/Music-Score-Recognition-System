@@ -263,8 +263,8 @@ def stem_filtering_and_notes_positions(image, bounding_boxes, clean_image=False)
     bounding_boxes = extract_bounding_boxes(image)
 
     # Eliminar componentes conexas que no cumplen con la condición
-    final_image, centers, fulls = remove_components_and_find_notes(image, bounding_boxes, clean_image)
-    return final_image, centers, fulls
+    final_image, centers = remove_components_and_find_notes(image, bounding_boxes, clean_image)
+    return final_image, centers
 
 # En el paper se llama size filtering
 def head_filtering_v1(image, head_size, staffs_positions):
