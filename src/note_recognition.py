@@ -255,7 +255,7 @@ def remove_components_and_find_notes(image, bounding_boxes, clean_image=False):
                 y_center = y + h // 2
                 centers.append((x_center, y_center))
 
-    return image, centers, 0
+    return image, centers
 
 def stem_filtering_and_notes_positions(image, bounding_boxes, clean_image=False):
 

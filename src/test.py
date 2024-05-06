@@ -70,7 +70,7 @@ def test_sheet(image_path, base_dir):
 
     print(f"Detected elements: {accidental_and_rest_recognition.FIGURES_POSITIONS}")
 
-    stem_lines, centers, fulls = note_recognition.stem_filtering_and_notes_positions(labels, bounding_boxes)
+    stem_lines, centers = note_recognition.stem_filtering_and_notes_positions(labels, bounding_boxes)
     cv2.imwrite(f'{base_dir}/07_note_heads.png', stem_lines)
     for i in range(6,9):
         centers = note_recognition.add_fulls_to_detected_notes(accidental_and_rest_recognition.FIGURES_POSITIONS[i], centers)
