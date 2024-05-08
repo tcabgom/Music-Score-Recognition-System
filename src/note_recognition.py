@@ -436,19 +436,29 @@ def beat_analysis(processed_image, detected_notes, bounding_boxes=None):
             #Si el centro está en la bounding box
             if center[0] in range(x, x + w) and center[1] in range(y, y + h):
                 note = detected_notes[center]
-                if ":" not in note:
+                if ":" not in note: #Comprobamos que la nota no esté ya etiquetada
                     bbox_image = processed_image[y:y+h, x:x+w]
                     filtered_bbox_image = stem_filtering_without_morpholical_processing(bbox_image)
-                    bbox_images_by_center[center]=filtered_bbox_image
                     #Por cada componente dentro de la bounding box analizamos sus proporciones y contamos rectángulos
                     size_threshold = getSizeThreshold(filtered_bbox_image) #if size_threshold is None else size_threshold 
                     filtered_bbox_image = get_bbox_no_noise(filtered_bbox_image, size_threshold)
-                    num_of_rectangles = countRectangles(filtered_bbox_image, size_threshold) #Los rectángulos no son cabezas de notas
-                    detected_notes[center] = note + ":" + str(num_of_rectangles)
+                    bbox_images_by_center[center]=filtered_bbox_image
+                    num_of_rectangles = countRectangles(filtered_bbox_image) #Los rectángulos no son cabezas de notas
+                    if num_of_rectangles == 0:
+                        duration = str(1)
+                    else:
+                        duration = 1/(num_of_rectangles + 1)
+                        if duration >= 1:
+                            duration = str(int(duration))
+                        else:
+                            duration = "{:.2f}".format(duration).rstrip("0")
+                    detected_notes[center] = note + "\n(" + duration + ")"
 
     return bounding_boxes, bbox_images_by_center, detected_notes
 
-def get_bbox_no_noise(bbox_image, size_threshold):
+def get_bbox_no_noise(bbox_image, size_threshold=10):
+    kernel= cv2.getStructuringElement(cv2.MORPH_RECT, (3, 1))
+    bbox_image = cv2.dilate(bbox_image, kernel, iterations=1)
     num_labels, _, stats, _ = connected_component_labeling(bbox_image)
     for label_index in range(1, num_labels): #El rango es (1,N) para no contar el fondo
         x, y, w, h, _ = stats[label_index]
@@ -458,29 +468,27 @@ def get_bbox_no_noise(bbox_image, size_threshold):
 
 def stem_filtering_without_morpholical_processing(bbox_image):
     hist = vertical_projection(cv2.bitwise_not(bbox_image))
-    current_stem_lines = bbox_image.copy()  # Make a copy to avoid modifying the original image
+    current_stem_lines = bbox_image.copy()
     threshold = int(np.max(hist) * 0.6)
     for x in range(current_stem_lines.shape[1]):
         if hist[x] >= threshold:
-            # Remove stem pixels in the current column
-            current_stem_lines[:, x] = 255          # Crear un kernel para el cierre morfológico
+            current_stem_lines[:, x] = 255
     return current_stem_lines.astype(np.uint8)
 
-def countRectangles(filtered_bbox_image, size_threshold=10):
-    ROUNDNESS_PROPORTION_THRESHOLD=0.7 #Si las proporciones son menores, se considera rectángulo (1 sería cuadrado)
-    SIZE_THRESHOLD=size_threshold
+def countRectangles(filtered_bbox_image):
+    ROUNDNESS_PROPORTION_THRESHOLD=0.8 #Si las proporciones son menores, se considera rectángulo (1 sería cuadrado)
     num_of_rectangles = 0
     num_labels, _, stats, _ = connected_component_labeling(filtered_bbox_image)
     for label_index in range(1, num_labels): #El rango es (1,N) para no contar el fondo
         x, y, width, height, _ = stats[label_index]
-        if width*height > SIZE_THRESHOLD:
-            if min(width,height)/max(width,height) < ROUNDNESS_PROPORTION_THRESHOLD: #Comprobamos si tiene proporciones de rectángulo
-                num_of_rectangles += 1
-            else:
-                current_bbox_image = filtered_bbox_image[y:y+height, x:x+width]
-                if check_if_half_note(current_bbox_image):
-                    num_of_rectangles = 2
-                    break
+        proportion = min(width,height)/max(width,height)
+        if proportion < ROUNDNESS_PROPORTION_THRESHOLD: #Comprobamos si tiene proporciones de rectángulo
+            num_of_rectangles += 1
+        else:
+            current_bbox_image = filtered_bbox_image[y:y+height, x:x+width]
+            if check_if_half_note(current_bbox_image):
+                num_of_rectangles = -0.5 #Para que al hacer el inverso salga 2 de duración
+                break
     return num_of_rectangles
 
 def put_whole_notes(detected_notes):
@@ -488,22 +496,20 @@ def put_whole_notes(detected_notes):
     for i in range(6,9):
         centers = add_fulls_to_detected_notes(FIGURES_POSITIONS[i], centers)
         for center in centers:
-            detected_notes[center] = detected_notes[center] + ":" + str(4)
+            detected_notes[center] = detected_notes[center] + "\n(" + str(4) + ")"
     
 def check_if_half_note(current_bbox_image):
     HALF_NOTE_THRESHOLD=0.5
-    black_px=0
     white_px=0
     isHalf = False
-    for i in range(current_bbox_image.shape[0]):
-        for j in range(current_bbox_image.shape[1]):
-            if current_bbox_image[i,j]==0:
-                black_px += 1
-            else:
+    height, width = current_bbox_image.shape
+    for i in range(height):
+        for j in range(width):
+            if current_bbox_image[i,j]==255:
                 white_px += 1
-        if black_px/white_px > HALF_NOTE_THRESHOLD:
-            isHalf = True
-            break
+    white_percentage = white_px/(height*width)
+    if white_percentage > HALF_NOTE_THRESHOLD:
+        isHalf = True
     return isHalf
 
 
@@ -526,7 +532,8 @@ def draw_detected_notes_v1(sheet, detected_notes, staff_lines):
     sheet_color = cv2.cvtColor(sheet, cv2.COLOR_GRAY2BGR)
     for note in dict.keys(detected_notes):
         note_x, note_y = note
-        pitch_and_beat = detected_notes[note]
+        pitch_and_beat = detected_notes[note].split("\n")
+        pitch = pitch_and_beat[0]
 
         # Buscar las líneas que están debajo de la nota
         lines_below_note = [line for line in draw_note_y if line > note_y]
@@ -538,14 +545,18 @@ def draw_detected_notes_v1(sheet, detected_notes, staff_lines):
             note_y = closest_y
 
             # Obtener el tamaño del texto para centrarlo
-            text_size, _ = cv2.getTextSize(pitch_and_beat, font, scale, thickness)
+            text_size, _ = cv2.getTextSize(pitch, font, scale, thickness)
             # Calcular las coordenadas del centro del texto
             text_x = note_x - text_size[0] // 2
             text_y = note_y + text_size[1] // 2
 
             coordinates = (text_x, text_y)
 
-            cv2.putText(sheet_color, pitch_and_beat, coordinates, font, scale, color, thickness)
+            cv2.putText(sheet_color, pitch, coordinates, font, scale, color, thickness)
+            if len(pitch_and_beat) > 1 and isinstance(pitch_and_beat, list):
+                beat = pitch_and_beat[1]
+                coordinates_beat = (text_x, text_y + text_size[1] + 10)
+                cv2.putText(sheet_color, beat, coordinates_beat, font, scale, color, thickness)
 
     return sheet_color
 
@@ -560,7 +571,8 @@ def draw_detected_notes_v2(sheet, detected_notes, staff_lines):
     sheet_color = cv2.cvtColor(sheet, cv2.COLOR_GRAY2BGR)
     for note in dict.keys(detected_notes):
         note_x, note_y = note
-        pitch_and_beat = detected_notes[note]
+        pitch_and_beat = detected_notes[note].split("\n")
+        pitch = pitch_and_beat[0]
 
         # Buscar las líneas que están debajo de la nota
         lines_below_note = [line for line in draw_note_y if line > note_y]
@@ -572,13 +584,17 @@ def draw_detected_notes_v2(sheet, detected_notes, staff_lines):
             note_y = closest_y
 
             # Obtener el tamaño del texto para centrarlo
-            text_size, _ = cv2.getTextSize(pitch_and_beat, font, scale, thickness)
+            text_size, _ = cv2.getTextSize(pitch, font, scale, thickness)
             # Calcular las coordenadas del centro del texto
             text_x = note_x - text_size[0] // 2
             text_y = note_y + text_size[1] // 2
 
-            coordinates = (text_x, text_y)
+            coordinates_pitch = (text_x, text_y)
 
-            cv2.putText(sheet_color, pitch_and_beat, coordinates, font, scale, color, thickness)
+            cv2.putText(sheet_color, pitch, coordinates_pitch, font, scale, color, thickness)
+            if len(pitch_and_beat) > 1 and isinstance(pitch_and_beat, list):
+                beat = pitch_and_beat[1]
+                coordinates_beat = (text_x, text_y + text_size[1] + 10)
+                cv2.putText(sheet_color, beat, coordinates_beat, font, scale, color, thickness)
 
     return sheet_color
