@@ -151,7 +151,7 @@ def stem_filtering(staff_images):
 def extract_bounding_boxes(binary_image):
 
     # Encontrar componentes conexas y sus estadísticas
-    num_labels, labels, stats, centroids = connected_component_labeling(binary_image)
+    num_labels, _, stats, _ = connected_component_labeling(binary_image)
     bounding_boxes = []
     
     for i in range(1, num_labels):
