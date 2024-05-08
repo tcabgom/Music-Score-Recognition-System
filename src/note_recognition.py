@@ -207,7 +207,7 @@ def aspect_ratio_condition_vertical(bbox, threshold = 1.8):
 
 
 # Función para eliminar componentes conexas que no cumplen con la condición
-def remove_components_and_find_notes(image, bounding_boxes, clean_image=False):
+def remove_components_and_find_notes(image, bounding_boxes, staff_lines_v2, clean_image=False):
     areas = []
     centers = []
     bounding_boxes_aux = []
@@ -237,6 +237,10 @@ def remove_components_and_find_notes(image, bounding_boxes, clean_image=False):
                 image[y:y+h, x:x+w] = 255
             if areas[i] > mean_area * 1.6 and aspect_ratio_condition_horizontal(bbox, 1.17):
                 image[y:y+h, x:x+w] = 255
+            
+            #if h > staff_lines_v2[0][1]+2:
+            #    image[y:y+h, x:x+w] = 255
+            
             else:
                 area = w * h
                 areas2.append(area)
@@ -257,13 +261,13 @@ def remove_components_and_find_notes(image, bounding_boxes, clean_image=False):
 
     return image, centers
 
-def stem_filtering_and_notes_positions(image, bounding_boxes, clean_image=False):
+def stem_filtering_and_notes_positions(image, bounding_boxes, staff_lines_v2, clean_image=True):
 
     image = stem_filtering_on_bounding_boxes(image, bounding_boxes)
     bounding_boxes = extract_bounding_boxes(image)
 
     # Eliminar componentes conexas que no cumplen con la condición
-    final_image, centers = remove_components_and_find_notes(image, bounding_boxes, clean_image)
+    final_image, centers = remove_components_and_find_notes(image, bounding_boxes, staff_lines_v2, clean_image)
     return final_image, centers
 
 # En el paper se llama size filtering
