@@ -126,5 +126,6 @@ if __name__ == '__main__':
     
     # Comentar esta linea para limpiar la carpeta de tests
     test_project(tested_sheets, is_executed_on_notebook)
+    print("\n¡Pruebas finalizadas!\n")
 
 
