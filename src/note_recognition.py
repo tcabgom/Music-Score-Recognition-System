@@ -324,13 +324,6 @@ def shape_filtering(note_head_size, binary_image):
 
     return note_head_centers
 
-
-def add_fulls_to_detected_notes(fulls, note_head_positions):
-    for full in fulls:
-        note_head_positions.append((round(full[0]+full[2]*0.5),round(full[1]+full[3]*0.5)))
-    return note_head_positions
-
-
 def pitch_analysis_v1(note_head_positions, staff_lines_positions):
     '''
     
@@ -427,9 +420,8 @@ def pitch_analysis_v2(note_head_positions, staff_lines_positions):
 
     return notes_pitch
 
-def beat_analysis(processed_image, detected_notes, bounding_boxes=None):
+def beat_analysis(processed_image, detected_notes, staff_lines_positions, bounding_boxes=None):
     detected_notes = detected_notes.copy()
-    put_whole_notes(detected_notes) #Ponemos las enteras de primeras y luego las saltamos
     bbox_images_by_center = {} #Diccionario centro:imagen_bbox para visualizar cada nota por separado
     size_threshold = None #Necesitamos un límite de tamaño para no contar el ruido existente en las imágenes
     if bounding_boxes is None:
@@ -444,10 +436,10 @@ def beat_analysis(processed_image, detected_notes, bounding_boxes=None):
                     bbox_image = processed_image[y:y+h, x:x+w]
                     filtered_bbox_image = stem_filtering_without_morpholical_processing(bbox_image)
                     #Por cada componente dentro de la bounding box analizamos sus proporciones y contamos rectángulos
-                    size_threshold = getSizeThreshold(filtered_bbox_image) #if size_threshold is None else size_threshold 
+                    size_threshold = get_size_threshold(filtered_bbox_image) #if size_threshold is None else size_threshold 
                     filtered_bbox_image = get_bbox_no_noise(filtered_bbox_image, size_threshold)
                     bbox_images_by_center[center]=filtered_bbox_image
-                    num_of_rectangles = countRectangles(filtered_bbox_image) #Los rectángulos no son cabezas de notas
+                    num_of_rectangles = count_rectangles(filtered_bbox_image) #Los rectángulos no son cabezas de notas
                     if num_of_rectangles == 0:
                         duration = str(1)
                     else:
@@ -457,7 +449,7 @@ def beat_analysis(processed_image, detected_notes, bounding_boxes=None):
                         else:
                             duration = "{:.2f}".format(duration).rstrip("0")
                     detected_notes[center] = note + "\n(" + duration + ")"
-
+    detected_notes = add_wholes_to_detected_notes(detected_notes, staff_lines_positions)
     return bounding_boxes, bbox_images_by_center, detected_notes
 
 def get_bbox_no_noise(bbox_image, size_threshold=10):
@@ -479,7 +471,7 @@ def stem_filtering_without_morpholical_processing(bbox_image):
             current_stem_lines[:, x] = 255
     return current_stem_lines.astype(np.uint8)
 
-def countRectangles(filtered_bbox_image):
+def count_rectangles(filtered_bbox_image):
     ROUNDNESS_PROPORTION_THRESHOLD=0.8 #Si las proporciones son menores, se considera rectángulo (1 sería cuadrado)
     num_of_rectangles = 0
     num_labels, _, stats, _ = connected_component_labeling(filtered_bbox_image)
@@ -495,12 +487,16 @@ def countRectangles(filtered_bbox_image):
                 break
     return num_of_rectangles
 
-def put_whole_notes(detected_notes):
-    centers=[]
+def add_wholes_to_detected_notes(detected_notes, staff_lines_positions):
+    whole_notes_centers = []
     for i in range(6,9):
-        centers = add_fulls_to_detected_notes(FIGURES_POSITIONS[i], centers)
-        for center in centers:
-            detected_notes[center] = detected_notes[center] + "\n(" + str(4) + ")"
+        fulls = FIGURES_POSITIONS[i]
+        for full in fulls:
+            whole_notes_centers.append((round(full[0]+full[2]*0.5),round(full[1]+full[3]*0.5)))
+        whole_detected_notes = pitch_analysis_v2(whole_notes_centers, staff_lines_positions)
+        for key in dict.keys(whole_detected_notes):
+            detected_notes[key] = whole_detected_notes[key] + "\n(" + str(4) + ")"
+    return detected_notes
     
 def check_if_half_note(current_bbox_image):
     HALF_NOTE_THRESHOLD=0.5
@@ -517,7 +513,7 @@ def check_if_half_note(current_bbox_image):
     return isHalf
 
 
-def getSizeThreshold(filtered_bbox_image):
+def get_size_threshold(filtered_bbox_image):
     size_sum = 0
     num_labels, _, stats, _ = connected_component_labeling(filtered_bbox_image)
     for label_index in range(1, num_labels): #El rango es (1,N) para no contar el fondo
